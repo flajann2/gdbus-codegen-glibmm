@@ -87,11 +87,13 @@ def codegen_main():
     cpp_code = opts.generate_cpp_code
 
     if cpp_code:
-        proxy_h = open(cpp_code + "_proxy" + '.h', 'w')
+        proxy_h   = open(cpp_code + "_proxy" + '.h', 'w')
         proxy_cpp = open(cpp_code + "_proxy" + '.cpp', 'w')
-        stub_h = open(cpp_code + "_stub" + '.h', 'w')
+        stub_h   = open(cpp_code + "_stub" + '.h', 'w')
         stub_cpp = open(cpp_code + "_stub" + '.cpp', 'w')
-        common_h = open(cpp_code + "_common" + '.h', 'w')
+        promise_h   = open(cpp_code + "_promise" + '.h', 'w')
+        promise_cpp = open(cpp_code + "_promise" + '.cpp', 'w')
+        common_h   = open(cpp_code + "_common" + '.h', 'w')
         common_cpp = open(cpp_code + "_common" + '.cpp', 'w')
         gen = codegen.CodeGenerator(all_ifaces,
                                     opts.cpp_namespace,

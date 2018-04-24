@@ -81,6 +81,20 @@ class CodeGenerator:
         """
         self.emit(self.stub_cpp, text, newline)
 
+    def emit_h_f (self, text, newline = True):
+        """ Emit code to promise/future header file
+            @param newline boolean indicating whether to append a newline to
+                           generated code
+        """
+        self.emit(self.promise_h, text, newline)
+
+    def emit_cpp_f (self, text, newline = True):
+        """ Emit code to promise/future cpp file
+            @param newline boolean indicating whether to append a newline to
+                           generated code
+        """
+        self.emit(self.promise_cpp, text, newline)
+        
     def emit_h_common (self, text, newline = True):
         """ Emit code to common header file
             @param newline boolean indicating whether to append a newline to
@@ -572,6 +586,10 @@ class CodeGenerator:
 
             self.emit_h_s("")
 
+    def define_types_promise_creation(self, i):
+        self.emit_
+        pass
+        
     def define_types_stub_creation(self, i):
         # Constructor
         self.emit_cpp_s(dedent('''
@@ -974,6 +992,21 @@ class CodeGenerator:
             self.define_types_property_setters_stub(i)
             self.define_types_emit_stub(i)
 
+        # Promise
+        self.generate_stub_introspection()
+        self.generate_stub_intro()
+        self.declare_types_stub()
+        for i in self.ifaces:
+            self.define_types_promise_creation(i)
+            # TODO: The rest here will change.
+            self.define_types_method_handlers_stub(i)
+            self.define_types_property_get_handlers_stub(i)
+            self.define_types_property_set_handlers_stub(i)
+            self.define_types_signal_emitters_stub(i)
+            self.define_types_dbus_callbacks_stub(i)
+            self.define_types_property_setters_stub(i)
+            self.define_types_emit_stub(i)
+        
         # Common
         self.generate_common_intro()
         for i in self.ifaces:

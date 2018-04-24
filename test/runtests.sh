@@ -10,6 +10,14 @@ make
 ./stubtest &
 STUB_PID=$!
 
+cd promise
+mkdir -p build
+cd build
+cd .. ; rm -rf build ; mkdir build; cd build; cmake .. -DCODEGEN="$DIR/../gdbus-codegen-glibmm.py" -DCMAKE_BUILD_TYPE=Debug
+make
+./promisetest &
+PROMISE_PID=$!
+
 cd ../../proxy
 mkdir -p build
 cd build
@@ -22,4 +30,5 @@ PROXY_PID=$!
 sleep 1
 
 kill $STUB_PID
+kill $PROMISE_PID
 kill $PROXY_PID
