@@ -34,12 +34,22 @@ from . import dbustypes
 SIGNAL_MAX_PARAM = 10
 
 class CodeGenerator:
-    def __init__(self, ifaces, namespace, interface_prefix, node_xmls, proxy_h, proxy_cpp, stub_cpp, stub_h, common_cpp, common_h):
+    def __init__(self,
+                 ifaces,
+                 namespace,
+                 interface_prefix,
+                 node_xmls,
+                 proxy_h, proxy_cpp,
+                 stub_cpp, stub_h,
+                 promise_cpp, promise_h,
+                 common_cpp, common_h):
         self.ifaces = ifaces
         self.proxy_h = proxy_h
         self.proxy_cpp = proxy_cpp
-        self.stub_h = stub_h
+        self.stub_h   = stub_h
         self.stub_cpp = stub_cpp
+        self.promise_h   = promise_h
+        self.promise_cpp = promise_cpp
         self.common_h = common_h
         self.common_cpp = common_cpp
         self.node_xmls = node_xmls
@@ -872,9 +882,76 @@ class CodeGenerator:
         self.emit_cpp_f ('#include "%s"' % self.promise_h.name)
 
     def define_types_promise_creation(self, i):
-        self.emit_h_f()
-        pass
-        
+        # Constructor
+        self.emit_cpp_f(dedent('''
+        {i.cpp_namespace_name}::{i.cpp_class_name} () : connectionId(0), registeredId(0), m_interfaceName("{i.name}") {{
+        ''').format(**locals()))
+        for s in i.signals:
+            # Sigc does not allow an infinite number of parameters for signals.
+            # The maximum number of signals is specified in SIGNAL_MAX_PARAM. A
+            # warning is issued if this is exceeded, and no signal handler uis
+            # generated.
+            if (len(s.args) > SIGNAL_MAX_PARAM):
+                print "WARNING: signal %s has too many parameters, skipping" % s.name
+                continue
+            self.emit_cpp_f("    {s.name}_signal.connect(sigc::mem_fun(this, &{i.cpp_class_name}::{s.name}_emitter));".format(**locals()))
+        #TODO: This code will only fetch introspection data for interfaces
+        # contained in the first interfaceXml variable. We need to check which
+        # interfaceXml variable contains our XML, and use the correct one
+        # instead. This code will break if there are several introspection XML
+        # files specified.
+        self.emit_cpp_s(dedent('''
+        }}
+
+        {i.cpp_namespace_name}::~{i.cpp_class_name}()
+        {{
+        }}
+
+        guint {i.cpp_namespace_name}::register_object(
+            const Glib::RefPtr<Gio::DBus::Connection> &connection,
+            const Glib::ustring &object_path)
+        {{
+            if (!m_objectPath.empty() && m_objectPath != object_path) {{
+                g_warning("Cannot register the same object twice!");
+
+                return 0;
+            }}
+            try {{
+                    introspection_data = Gio::DBus::NodeInfo::create_for_xml(interfaceXml0);
+            }} catch(const Glib::Error& ex) {{
+                    g_warning("Unable to create introspection data: ");
+                    g_warning("%s\\n", ex.what().c_str());
+            }}
+            Gio::DBus::InterfaceVTable *interface_vtable =
+                new Gio::DBus::InterfaceVTable(
+                    sigc::mem_fun(this, &{i.cpp_class_name}::on_method_call),
+                    sigc::mem_fun(this, &{i.cpp_class_name}::on_interface_get_property),
+                    sigc::mem_fun(this, &{i.cpp_class_name}::on_interface_set_property));
+            guint id = 0;
+            try {{
+                id = connection->register_object(object_path,
+                    introspection_data->lookup_interface("{i.name}"),
+                    *interface_vtable);
+                m_connection = connection;
+                m_objectPath = object_path;
+            }}
+            catch(const Glib::Error &ex) {{
+                g_warning("Registration of object failed");
+            }}
+            return id;
+        }}
+
+        void {i.cpp_namespace_name}::connect (
+            Gio::DBus::BusType busType,
+            std::string name)
+        {{
+            connectionId = Gio::DBus::own_name(busType,
+                                               name,
+                                               sigc::mem_fun(this, &{i.cpp_class_name}::on_bus_acquired),
+                                               sigc::mem_fun(this, &{i.cpp_class_name}::on_name_acquired),
+                                               sigc::mem_fun(this, &{i.cpp_class_name}::on_name_lost));
+        }}''').format(**locals()))
+        pass        
 
     def declare_types_promise(self):
         """ Generate types and classes for the promise. This will generate the

@@ -101,6 +101,7 @@ def codegen_main():
                                     node_xmls,
                                     proxy_h, proxy_cpp,
                                     stub_cpp, stub_h,
+                                    promise_cpp, promise_h,
                                     common_cpp, common_h);
         ret = gen.generate()
         proxy_h.close()

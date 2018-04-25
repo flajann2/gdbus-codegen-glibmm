@@ -10,7 +10,8 @@ make
 ./stubtest &
 STUB_PID=$!
 
-cd promise
+echo "=== $(pwd) ==="
+cd ../../promise
 mkdir -p build
 cd build
 cd .. ; rm -rf build ; mkdir build; cd build; cmake .. -DCODEGEN="$DIR/../gdbus-codegen-glibmm.py" -DCMAKE_BUILD_TYPE=Debug
