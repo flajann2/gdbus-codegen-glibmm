@@ -900,7 +900,7 @@ class CodeGenerator:
         # interfaceXml variable contains our XML, and use the correct one
         # instead. This code will break if there are several introspection XML
         # files specified.
-        self.emit_cpp_s(dedent('''
+        self.emit_cpp_f(dedent('''
         }}
 
         {i.cpp_namespace_name}::~{i.cpp_class_name}()
@@ -1204,13 +1204,13 @@ class CodeGenerator:
         for i in self.ifaces:
             self.define_types_promise_creation(i)
             # TODO: The rest here will change.
-            self.define_types_method_handlers_stub(i)
-            self.define_types_property_get_handlers_stub(i)
-            self.define_types_property_set_handlers_stub(i)
-            self.define_types_signal_emitters_stub(i)
-            self.define_types_dbus_callbacks_stub(i)
-            self.define_types_property_setters_stub(i)
-            self.define_types_emit_stub(i)
+            #self.define_types_method_handlers_stub(i)
+            #self.define_types_property_get_handlers_stub(i)
+            #self.define_types_property_set_handlers_stub(i)
+            #self.define_types_signal_emitters_stub(i)
+            #self.define_types_dbus_callbacks_stub(i)
+            #self.define_types_property_setters_stub(i)
+            #self.define_types_emit_stub(i)
         
         # Common
         self.generate_common_intro()
