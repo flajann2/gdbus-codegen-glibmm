@@ -61,6 +61,8 @@ def codegen_main():
                             help='The namespace to use for generated C++ code')
     arg_parser.add_option('', '--generate-cpp-code', metavar='OUTFILES',
                           help='Generate C++ code in OUTFILES.[cpp|h]')
+    arg_parser.add_option('', '--promise', metavar='PROMISE',
+                          help='Generate C++ code in OUTFILES.[cpp|h]')
     (opts, args) = arg_parser.parse_args()
 
 

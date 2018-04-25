@@ -32,14 +32,14 @@ ADD_CUSTOM_COMMAND (OUTPUT ${GENERATED_PROMISE}
                     COMMENT "Generate the promises for the test program")
 
 SET (SOURCES
-    testspromisemain.cpp
+    testpromisemain.cpp
     ${CMAKE_BINARY_DIR}/generated/many-types_promise.cpp
     ${CMAKE_BINARY_DIR}/generated/many-types_stub.cpp
     ${CMAKE_BINARY_DIR}/generated/many-types_common.cpp
 )
 
 SET (HEADERS
-    testspromisemain.h
+    testpromisemain.h
     ../common/tools.h
     ${CMAKE_BINARY_DIR}/generated/many-types_promise.h
     ${CMAKE_BINARY_DIR}/generated/many-types_stub.h

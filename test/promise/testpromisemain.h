@@ -1,4 +1,4 @@
-#include "many-types_stub.h"
+#include "many-types_promise.h"
 
 class TestImpl : public org::gdbus::codegen::glibmm::Test {
 public:

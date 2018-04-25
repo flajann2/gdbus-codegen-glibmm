@@ -1,4 +1,4 @@
-#include "teststubmain.h"
+#include "testpromisemain.h"
 #include "tools.h"
 #include <iostream>
 
