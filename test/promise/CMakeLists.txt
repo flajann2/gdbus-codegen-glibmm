@@ -13,37 +13,37 @@ IF (NOT CODEGEN)
 ENDIF ()
 
 SET (GENERATED_PROMISE
-    ${CMAKE_BINARY_DIR}/generated/many-types_promise.cpp
-    ${CMAKE_BINARY_DIR}/generated/many-types_promise.h
-    ${CMAKE_BINARY_DIR}/generated/many-types_stub.cpp
-    ${CMAKE_BINARY_DIR}/generated/many-types_stub.h
-    ${CMAKE_BINARY_DIR}/generated/many-types_common.cpp
-    ${CMAKE_BINARY_DIR}/generated/many-types_common.h
+    ${CMAKE_BINARY_DIR}/generated/futures_promise.cpp
+    ${CMAKE_BINARY_DIR}/generated/futures_promise.h
+    ${CMAKE_BINARY_DIR}/generated/futures_stub.cpp
+    ${CMAKE_BINARY_DIR}/generated/futures_stub.h
+    ${CMAKE_BINARY_DIR}/generated/futures_common.cpp
+    ${CMAKE_BINARY_DIR}/generated/futures_common.h
 )
 
-SET (INTROSPECTION_XML ${CMAKE_SOURCE_DIR}/../common/many-types.xml)
+SET (INTROSPECTION_XML ${CMAKE_SOURCE_DIR}/../common/futures.xml)
 
 ADD_CUSTOM_COMMAND (OUTPUT ${GENERATED_PROMISE}
                     COMMAND mkdir -p ${CMAKE_BINARY_DIR}/generated/
                     COMMAND ${CODEGEN} --promise
-                                       --generate-cpp-code=${CMAKE_BINARY_DIR}/generated/many-types
+                                       --generate-cpp-code=${CMAKE_BINARY_DIR}/generated/futures
                                        ${INTROSPECTION_XML}
                     DEPENDS ${INTROSPECTION_XML}
                     COMMENT "Generate the promises for the test program")
 
 SET (SOURCES
     testpromisemain.cpp
-    ${CMAKE_BINARY_DIR}/generated/many-types_promise.cpp
-    ${CMAKE_BINARY_DIR}/generated/many-types_stub.cpp
-    ${CMAKE_BINARY_DIR}/generated/many-types_common.cpp
+    ${CMAKE_BINARY_DIR}/generated/futures_promise.cpp
+    ${CMAKE_BINARY_DIR}/generated/futures_stub.cpp
+    ${CMAKE_BINARY_DIR}/generated/futures_common.cpp
 )
 
 SET (HEADERS
     testpromisemain.h
     ../common/tools.h
-    ${CMAKE_BINARY_DIR}/generated/many-types_promise.h
-    ${CMAKE_BINARY_DIR}/generated/many-types_stub.h
-    ${CMAKE_BINARY_DIR}/generated/many-types_common.h
+    ${CMAKE_BINARY_DIR}/generated/futures_promise.h
+    ${CMAKE_BINARY_DIR}/generated/futures_stub.h
+    ${CMAKE_BINARY_DIR}/generated/futures_common.h
 )
 
 INCLUDE_DIRECTORIES (

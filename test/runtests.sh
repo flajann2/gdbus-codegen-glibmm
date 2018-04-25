@@ -2,6 +2,7 @@
 
 DIR=$(cd $(dirname "$0"); pwd)
 
+echo "=== STUB ==="
 cd stub
 mkdir -p build
 cd build
@@ -10,7 +11,7 @@ make
 ./stubtest &
 STUB_PID=$!
 
-echo "=== $(pwd) ==="
+echo "=== PROMISE ==="
 cd ../../promise
 mkdir -p build
 cd build
@@ -19,6 +20,7 @@ make
 ./promisetest &
 PROMISE_PID=$!
 
+echo "=== PROXY ==="
 cd ../../proxy
 mkdir -p build
 cd build

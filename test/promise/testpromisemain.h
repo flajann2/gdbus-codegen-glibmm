@@ -1,4 +1,4 @@
-#include "many-types_promise.h"
+#include "futures_promise.h"
 
 class TestImpl : public org::gdbus::codegen::glibmm::Test {
 public:
