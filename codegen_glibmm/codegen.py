@@ -41,18 +41,25 @@ class CodeGenerator:
                  node_xmls,
                  proxy_h, proxy_cpp,
                  stub_cpp, stub_h,
-                 promise_cpp, promise_h,
+                 if_promises, promise_cpp, promise_h,
                  common_cpp, common_h):
         self.ifaces = ifaces
+
         self.proxy_h = proxy_h
         self.proxy_cpp = proxy_cpp
+
         self.stub_h   = stub_h
         self.stub_cpp = stub_cpp
+        
+        self.if_promises = if_promises
         self.promise_h   = promise_h
         self.promise_cpp = promise_cpp
+
         self.common_h = common_h
         self.common_cpp = common_cpp
+
         self.node_xmls = node_xmls
+        pass
 
     def emit (self, dest, text, newline = True):
         """ Emit code to the specified file
@@ -1199,18 +1206,19 @@ class CodeGenerator:
             self.define_types_emit_stub(i)
 
         # Promise
-        self.generate_promise_intro()
-        self.declare_types_promise()
-        for i in self.ifaces:
-            self.define_types_promise_creation(i)
-            # TODO: The rest here will change.
-            #self.define_types_method_handlers_stub(i)
-            #self.define_types_property_get_handlers_stub(i)
-            #self.define_types_property_set_handlers_stub(i)
-            #self.define_types_signal_emitters_stub(i)
-            #self.define_types_dbus_callbacks_stub(i)
-            #self.define_types_property_setters_stub(i)
-            #self.define_types_emit_stub(i)
+        if self.if_promises:
+            self.generate_promise_intro()
+            self.declare_types_promise()
+            for i in self.ifaces:
+                self.define_types_promise_creation(i)
+                # TODO: The rest here will change.
+                #self.define_types_method_handlers_stub(i)
+                #self.define_types_property_get_handlers_stub(i)
+                #self.define_types_property_set_handlers_stub(i)
+                #self.define_types_signal_emitters_stub(i)
+                #self.define_types_dbus_callbacks_stub(i)
+                #self.define_types_property_setters_stub(i)
+                #self.define_types_emit_stub(i)
         
         # Common
         self.generate_common_intro()

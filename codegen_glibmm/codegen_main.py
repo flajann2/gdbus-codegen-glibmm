@@ -65,7 +65,6 @@ def codegen_main():
                           help='Generate C++ code in OUTFILES.[cpp|h]')
     (opts, args) = arg_parser.parse_args()
 
-
     all_ifaces = []
     node_xmls = []
 
@@ -87,6 +86,7 @@ def codegen_main():
         i.post_process(interface_prefix_list, opts.cpp_namespace)
 
     cpp_code = opts.generate_cpp_code
+    if_promises = opts.promise
 
     if cpp_code:
         proxy_h   = open(cpp_code + "_proxy" + '.h', 'w')
@@ -103,7 +103,7 @@ def codegen_main():
                                     node_xmls,
                                     proxy_h, proxy_cpp,
                                     stub_cpp, stub_h,
-                                    promise_cpp, promise_h,
+                                    if_promises, promise_cpp, promise_h,
                                     common_cpp, common_h);
         ret = gen.generate()
         proxy_h.close()
