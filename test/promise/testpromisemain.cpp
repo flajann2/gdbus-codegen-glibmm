@@ -2,7 +2,7 @@
 #include "tools.h"
 #include <iostream>
 
-TestImpl::TestImpl() {
+FuTestImpl::FuTestImpl() {
   m_PropReadByteStringArrayValue.push_back("Value1");
   m_PropReadByteStringArrayValue.push_back("Value2");
   m_PropReadObjectPathArrayValue.push_back("Value3");
@@ -60,8 +60,8 @@ TestImpl::TestImpl() {
   m_PropReadWriteBooleanValue = true;
 }
 
-void TestImpl::TestVariant(Glib::VariantBase Param1,
-                           TestMessageHelper invocation) {
+void FuTestImpl::FuTestVariant(Glib::VariantBase Param1,
+                           FuTestMessageHelper invocation) {
   std::string value;
   try {
     Glib::Variant<Glib::ustring> res =
@@ -78,13 +78,13 @@ void TestImpl::TestVariant(Glib::VariantBase Param1,
   invocation.ret(variantValue);
 }
 
-void TestImpl::TestByteStringArray(std::vector<std::string> Param1,
-                                   TestMessageHelper invocation) {
+void FuTestImpl::FuTestByteStringArray(std::vector<std::string> Param1,
+                                   FuTestMessageHelper invocation) {
   invocation.ret(Param1);
 }
 
-void TestImpl::TestObjectPathArray(std::vector<std::string> Param1,
-                                   TestMessageHelper invocation) {
+void FuTestImpl::FuTestObjectPathArray(std::vector<std::string> Param1,
+                                   FuTestMessageHelper invocation) {
 
   std::vector<Glib::VariantBase> list;
   GVariantBuilder builder;
@@ -97,66 +97,66 @@ void TestImpl::TestObjectPathArray(std::vector<std::string> Param1,
   invocation.ret(ret);
 }
 
-void TestImpl::TestStringArray(std::vector<std::string> Param1,
-                               TestMessageHelper invocation) {
+void FuTestImpl::FuTestStringArray(std::vector<std::string> Param1,
+                               FuTestMessageHelper invocation) {
   invocation.ret(Param1);
 }
 
-void TestImpl::TestByteString(std::string Param1,
-                              TestMessageHelper invocation) {
+void FuTestImpl::FuTestByteString(std::string Param1,
+                              FuTestMessageHelper invocation) {
   invocation.ret(Param1);
 }
 
-void TestImpl::TestSignature(std::string Param1, TestMessageHelper invocation) {
+void FuTestImpl::FuTestSignature(std::string Param1, FuTestMessageHelper invocation) {
   invocation.ret(Glib::wrap(g_variant_new_signature(Param1.c_str())));
 }
 
-void TestImpl::TestObjectPath(std::string Param1,
-                              TestMessageHelper invocation) {
+void FuTestImpl::FuTestObjectPath(std::string Param1,
+                              FuTestMessageHelper invocation) {
   invocation.ret(Glib::wrap(g_variant_new_object_path(Param1.c_str())));
 }
 
-void TestImpl::TestString(std::string Param1, TestMessageHelper invocation) {
+void FuTestImpl::FuTestString(std::string Param1, FuTestMessageHelper invocation) {
   invocation.ret(Param1);
 }
 
-void TestImpl::TestDouble(double Param1, TestMessageHelper invocation) {
+void FuTestImpl::FuTestDouble(double Param1, FuTestMessageHelper invocation) {
   invocation.ret(Param1);
 }
 
-void TestImpl::TestUInt64(guint64 Param1, TestMessageHelper invocation) {
+void FuTestImpl::FuTestUInt64(guint64 Param1, FuTestMessageHelper invocation) {
   invocation.ret(Param1);
 }
 
-void TestImpl::TestInt64(gint64 Param1, TestMessageHelper invocation) {
+void FuTestImpl::FuTestInt64(gint64 Param1, FuTestMessageHelper invocation) {
   invocation.ret(Param1);
 }
 
-void TestImpl::TestUInt(guint32 Param1, TestMessageHelper invocation) {
+void FuTestImpl::FuTestUInt(guint32 Param1, FuTestMessageHelper invocation) {
   invocation.ret(Param1);
 }
 
-void TestImpl::TestInt(gint32 Param1, TestMessageHelper invocation) {
+void FuTestImpl::FuTestInt(gint32 Param1, FuTestMessageHelper invocation) {
   invocation.ret(Param1);
 }
 
-void TestImpl::TestUInt16(guint16 Param1, TestMessageHelper invocation) {
+void FuTestImpl::FuTestUInt16(guint16 Param1, FuTestMessageHelper invocation) {
   invocation.ret(Param1);
 }
 
-void TestImpl::TestInt16(gint16 Param1, TestMessageHelper invocation) {
+void FuTestImpl::FuTestInt16(gint16 Param1, FuTestMessageHelper invocation) {
   invocation.ret(Param1);
 }
 
-void TestImpl::TestChar(guchar Param1, TestMessageHelper invocation) {
+void FuTestImpl::FuTestChar(guchar Param1, FuTestMessageHelper invocation) {
   invocation.ret(Param1);
 }
 
-void TestImpl::TestBoolean(bool Param1, TestMessageHelper invocation) {
+void FuTestImpl::FuTestBoolean(bool Param1, FuTestMessageHelper invocation) {
   invocation.ret(Param1);
 }
 
-void TestImpl::TestAll(std::vector<std::string> in_Param1,
+void FuTestImpl::FuTestAll(std::vector<std::string> in_Param1,
                        std::vector<std::string> in_Param2,
                        std::vector<std::string> in_Param3,
                        std::string in_Param4, std::string in_Param5,
@@ -164,254 +164,254 @@ void TestImpl::TestAll(std::vector<std::string> in_Param1,
                        double in_Param8, guint64 in_Param9, gint64 in_Param10,
                        guint32 in_Param11, gint32 in_Param12,
                        guint16 in_Param13, gint16 in_Param14, guchar in_Param15,
-                       bool in_Param16, TestMessageHelper invocation) {}
+                       bool in_Param16, FuTestMessageHelper invocation) {}
 
-void TestImpl::TestTriggerInternalPropertyChange(gint32 newValue,
-                                                 TestMessageHelper invocation) {
-  TestPropInternalReadPropertyChange_set(newValue);
-  TestPropInternalReadWritePropertyChange_set(newValue);
+void FuTestImpl::FuTestTriggerInternalPropertyChange(gint32 newValue,
+                                                 FuTestMessageHelper invocation) {
+  FuTestPropInternalReadPropertyChange_set(newValue);
+  FuTestPropInternalReadWritePropertyChange_set(newValue);
   invocation.ret();
 }
 
-std::vector<std::string> TestImpl::TestPropReadByteStringArray_get() {
+std::vector<std::string> FuTestImpl::FuTestPropReadByteStringArray_get() {
   return m_PropReadByteStringArrayValue;
 }
-std::vector<std::string> TestImpl::TestPropReadObjectPathArray_get() {
+std::vector<std::string> FuTestImpl::FuTestPropReadObjectPathArray_get() {
   return m_PropReadObjectPathArrayValue;
 }
-std::vector<std::string> TestImpl::TestPropReadStringArray_get() {
+std::vector<std::string> FuTestImpl::FuTestPropReadStringArray_get() {
   return m_PropReadStringArrayValue;
 }
-std::string TestImpl::TestPropReadByteString_get() {
+std::string FuTestImpl::FuTestPropReadByteString_get() {
   return m_PropReadByteStringValue;
 }
-std::string TestImpl::TestPropReadSignature_get() {
+std::string FuTestImpl::FuTestPropReadSignature_get() {
   return m_PropReadSignatureValue;
 }
-std::string TestImpl::TestPropReadObjectPath_get() {
+std::string FuTestImpl::FuTestPropReadObjectPath_get() {
   return m_PropReadObjectPathValue;
 }
-std::string TestImpl::TestPropReadString_get() { return m_PropReadStringValue; }
-double TestImpl::TestPropReadDouble_get() { return m_PropReadDoubleValue; }
-guint64 TestImpl::TestPropReadUInt64_get() { return m_PropReadUInt64Value; }
-gint64 TestImpl::TestPropReadInt64_get() { return m_PropReadInt64Value; }
-guint32 TestImpl::TestPropReadUInt_get() { return m_PropReadUIntValue; }
-gint32 TestImpl::TestPropReadInt_get() { return m_PropReadIntValue; }
-guint16 TestImpl::TestPropReadUInt16_get() { return m_PropReadUInt16Value; }
-gint16 TestImpl::TestPropReadInt16_get() { return m_PropReadInt16Value; }
-guchar TestImpl::TestPropReadChar_get() { return m_PropReadCharValue; }
-bool TestImpl::TestPropReadBoolean_get() { return m_PropReadBooleanValue; }
-std::vector<std::string> TestImpl::TestPropWriteByteStringArray_get() {
+std::string FuTestImpl::FuTestPropReadString_get() { return m_PropReadStringValue; }
+double FuTestImpl::FuTestPropReadDouble_get() { return m_PropReadDoubleValue; }
+guint64 FuTestImpl::FuTestPropReadUInt64_get() { return m_PropReadUInt64Value; }
+gint64 FuTestImpl::FuTestPropReadInt64_get() { return m_PropReadInt64Value; }
+guint32 FuTestImpl::FuTestPropReadUInt_get() { return m_PropReadUIntValue; }
+gint32 FuTestImpl::FuTestPropReadInt_get() { return m_PropReadIntValue; }
+guint16 FuTestImpl::FuTestPropReadUInt16_get() { return m_PropReadUInt16Value; }
+gint16 FuTestImpl::FuTestPropReadInt16_get() { return m_PropReadInt16Value; }
+guchar FuTestImpl::FuTestPropReadChar_get() { return m_PropReadCharValue; }
+bool FuTestImpl::FuTestPropReadBoolean_get() { return m_PropReadBooleanValue; }
+std::vector<std::string> FuTestImpl::FuTestPropWriteByteStringArray_get() {
   return m_PropWriteByteStringArrayValue;
 }
-std::vector<std::string> TestImpl::TestPropWriteObjectPathArray_get() {
+std::vector<std::string> FuTestImpl::FuTestPropWriteObjectPathArray_get() {
   return m_PropWriteObjectPathArratValue;
 }
-std::vector<std::string> TestImpl::TestPropWriteStringArray_get() {
+std::vector<std::string> FuTestImpl::FuTestPropWriteStringArray_get() {
   return m_PropWriteStringArrayValue;
 }
-std::string TestImpl::TestPropWriteByteString_get() {
+std::string FuTestImpl::FuTestPropWriteByteString_get() {
   return m_PropWriteByteStringValue;
 }
-std::string TestImpl::TestPropWriteSignature_get() {
+std::string FuTestImpl::FuTestPropWriteSignature_get() {
   return m_PropWriteSignatureValue;
 }
-std::string TestImpl::TestPropWriteObjectPath_get() {
+std::string FuTestImpl::FuTestPropWriteObjectPath_get() {
   return m_PropWriteObjectPathValue;
 }
-std::string TestImpl::TestPropWriteString_get() {
+std::string FuTestImpl::FuTestPropWriteString_get() {
   return m_PropWriteStringValue;
 }
-double TestImpl::TestPropWriteDouble_get() { return m_PropWriteDoubleValue; }
-guint64 TestImpl::TestPropWriteUInt64_get() { return m_PropWriteUInt64Value; }
-gint64 TestImpl::TestPropWriteInt64_get() { return m_PropWriteInt64Value; }
-guint32 TestImpl::TestPropWriteUInt_get() { return m_PropWriteUIntValue; }
-gint32 TestImpl::TestPropWriteInt_get() { return m_PropWriteIntValue; }
-guint16 TestImpl::TestPropWriteUInt16_get() { return m_PropWriteUInt16Value; }
-gint16 TestImpl::TestPropWriteInt16_get() { return m_PropWriteInt16Value; }
-guchar TestImpl::TestPropWriteChar_get() { return m_PropWriteCharValue; }
-bool TestImpl::TestPropWriteBoolean_get() { return m_PropWriteBooleanValue; }
-std::vector<std::string> TestImpl::TestPropReadWriteByteStringArray_get() {
+double FuTestImpl::FuTestPropWriteDouble_get() { return m_PropWriteDoubleValue; }
+guint64 FuTestImpl::FuTestPropWriteUInt64_get() { return m_PropWriteUInt64Value; }
+gint64 FuTestImpl::FuTestPropWriteInt64_get() { return m_PropWriteInt64Value; }
+guint32 FuTestImpl::FuTestPropWriteUInt_get() { return m_PropWriteUIntValue; }
+gint32 FuTestImpl::FuTestPropWriteInt_get() { return m_PropWriteIntValue; }
+guint16 FuTestImpl::FuTestPropWriteUInt16_get() { return m_PropWriteUInt16Value; }
+gint16 FuTestImpl::FuTestPropWriteInt16_get() { return m_PropWriteInt16Value; }
+guchar FuTestImpl::FuTestPropWriteChar_get() { return m_PropWriteCharValue; }
+bool FuTestImpl::FuTestPropWriteBoolean_get() { return m_PropWriteBooleanValue; }
+std::vector<std::string> FuTestImpl::FuTestPropReadWriteByteStringArray_get() {
   return m_PropReadWriteByteStringArrayValue;
 }
-std::vector<std::string> TestImpl::TestPropReadWriteObjectPathArray_get() {
+std::vector<std::string> FuTestImpl::FuTestPropReadWriteObjectPathArray_get() {
   return m_PropReadWriteObjectPathArrayValue;
 }
-std::vector<std::string> TestImpl::TestPropReadWriteStringArray_get() {
+std::vector<std::string> FuTestImpl::FuTestPropReadWriteStringArray_get() {
   return m_PropReadWriteStringArrayValue;
 }
-std::string TestImpl::TestPropReadWriteByteString_get() {
+std::string FuTestImpl::FuTestPropReadWriteByteString_get() {
   return m_PropReadWriteByteStringValue;
 }
-std::string TestImpl::TestPropReadWriteSignature_get() {
+std::string FuTestImpl::FuTestPropReadWriteSignature_get() {
   return m_PropReadWriteSignatureValue;
 }
-std::string TestImpl::TestPropReadWriteObjectPath_get() {
+std::string FuTestImpl::FuTestPropReadWriteObjectPath_get() {
   return m_PropReadWriteObjectPathValue;
 }
-std::string TestImpl::TestPropReadWriteString_get() {
+std::string FuTestImpl::FuTestPropReadWriteString_get() {
   return m_PropReadWriteStringValue;
 }
-double TestImpl::TestPropReadWriteDouble_get() {
+double FuTestImpl::FuTestPropReadWriteDouble_get() {
   return m_PropReadWriteDoubleValue;
 }
-guint64 TestImpl::TestPropReadWriteUInt64_get() {
+guint64 FuTestImpl::FuTestPropReadWriteUInt64_get() {
   return m_PropReadWriteUInt64Value;
 }
-gint64 TestImpl::TestPropReadWriteInt64_get() {
+gint64 FuTestImpl::FuTestPropReadWriteInt64_get() {
   return m_PropReadWriteInt64Value;
 }
-guint32 TestImpl::TestPropReadWriteUInt_get() {
+guint32 FuTestImpl::FuTestPropReadWriteUInt_get() {
   return m_PropReadWriteUIntValue;
 }
-gint32 TestImpl::TestPropReadWriteInt_get() { return m_PropReadWriteIntValue; }
-guint16 TestImpl::TestPropReadWriteUInt16_get() {
+gint32 FuTestImpl::FuTestPropReadWriteInt_get() { return m_PropReadWriteIntValue; }
+guint16 FuTestImpl::FuTestPropReadWriteUInt16_get() {
   return m_PropReadWriteUInt16Value;
 }
-gint16 TestImpl::TestPropReadWriteInt16_get() {
+gint16 FuTestImpl::FuTestPropReadWriteInt16_get() {
   return m_PropReadWriteInt16Value;
 }
-guchar TestImpl::TestPropReadWriteChar_get() {
+guchar FuTestImpl::FuTestPropReadWriteChar_get() {
   return m_PropReadWriteCharValue;
 }
-bool TestImpl::TestPropReadWriteBoolean_get() {
+bool FuTestImpl::FuTestPropReadWriteBoolean_get() {
   return m_PropReadWriteBooleanValue;
 }
-gint32 TestImpl::TestPropInternalReadPropertyChange_get() {
-  return m_TestPropInternalReadPropertyChangeValue;
+gint32 FuTestImpl::FuTestPropInternalReadPropertyChange_get() {
+  return m_FuTestPropInternalReadPropertyChangeValue;
 }
-gint32 TestImpl::TestPropInternalReadWritePropertyChange_get() {
-  return m_TestPropInternalReadWritePropertyChangeValue;
+gint32 FuTestImpl::FuTestPropInternalReadWritePropertyChange_get() {
+  return m_FuTestPropInternalReadWritePropertyChangeValue;
 }
 
 /* These are not used, so we just return a dummy value here */
-bool TestImpl::TestPropWriteByteStringArray_setHandler(
+bool FuTestImpl::FuTestPropWriteByteStringArray_setHandler(
     std::vector<std::string> value) {
   return false;
 }
-bool TestImpl::TestPropWriteObjectPathArray_setHandler(
+bool FuTestImpl::FuTestPropWriteObjectPathArray_setHandler(
     std::vector<std::string> value) {
   return false;
 }
-bool TestImpl::TestPropWriteStringArray_setHandler(
+bool FuTestImpl::FuTestPropWriteStringArray_setHandler(
     std::vector<std::string> value) {
   return false;
 }
-bool TestImpl::TestPropWriteByteString_setHandler(std::string value) {
+bool FuTestImpl::FuTestPropWriteByteString_setHandler(std::string value) {
   return false;
 }
-bool TestImpl::TestPropWriteSignature_setHandler(std::string value) {
+bool FuTestImpl::FuTestPropWriteSignature_setHandler(std::string value) {
   return false;
 }
-bool TestImpl::TestPropWriteObjectPath_setHandler(std::string value) {
+bool FuTestImpl::FuTestPropWriteObjectPath_setHandler(std::string value) {
   return false;
 }
-bool TestImpl::TestPropWriteString_setHandler(std::string value) {
+bool FuTestImpl::FuTestPropWriteString_setHandler(std::string value) {
   return false;
 }
-bool TestImpl::TestPropWriteDouble_setHandler(double value) { return false; }
-bool TestImpl::TestPropWriteUInt64_setHandler(guint64 value) { return false; }
-bool TestImpl::TestPropWriteInt64_setHandler(gint64 value) { return false; }
-bool TestImpl::TestPropWriteUInt_setHandler(guint32 value) { return false; }
-bool TestImpl::TestPropWriteInt_setHandler(gint32 value) { return false; }
-bool TestImpl::TestPropWriteUInt16_setHandler(guint16 value) { return false; }
-bool TestImpl::TestPropWriteInt16_setHandler(gint16 value) { return false; }
-bool TestImpl::TestPropWriteChar_setHandler(guchar value) { return false; }
-bool TestImpl::TestPropWriteBoolean_setHandler(bool value) { return false; }
+bool FuTestImpl::FuTestPropWriteDouble_setHandler(double value) { return false; }
+bool FuTestImpl::FuTestPropWriteUInt64_setHandler(guint64 value) { return false; }
+bool FuTestImpl::FuTestPropWriteInt64_setHandler(gint64 value) { return false; }
+bool FuTestImpl::FuTestPropWriteUInt_setHandler(guint32 value) { return false; }
+bool FuTestImpl::FuTestPropWriteInt_setHandler(gint32 value) { return false; }
+bool FuTestImpl::FuTestPropWriteUInt16_setHandler(guint16 value) { return false; }
+bool FuTestImpl::FuTestPropWriteInt16_setHandler(gint16 value) { return false; }
+bool FuTestImpl::FuTestPropWriteChar_setHandler(guchar value) { return false; }
+bool FuTestImpl::FuTestPropWriteBoolean_setHandler(bool value) { return false; }
 /* End return dummy value warning */
 
-bool TestImpl::TestPropReadWriteByteStringArray_setHandler(
+bool FuTestImpl::FuTestPropReadWriteByteStringArray_setHandler(
     std::vector<std::string> value) {
   m_PropReadWriteByteStringArrayValue = value;
-  TestSignalByteStringArray_signal.emit(value);
+  FuTestSignalByteStringArray_signal.emit(value);
   return true;
 }
-bool TestImpl::TestPropReadWriteObjectPathArray_setHandler(
+bool FuTestImpl::FuTestPropReadWriteObjectPathArray_setHandler(
     std::vector<std::string> value) {
   m_PropReadWriteObjectPathArrayValue = value;
-  TestSignalObjectPathArray_signal.emit(value);
+  FuTestSignalObjectPathArray_signal.emit(value);
   return true;
 }
-bool TestImpl::TestPropReadWriteStringArray_setHandler(
+bool FuTestImpl::FuTestPropReadWriteStringArray_setHandler(
     std::vector<std::string> value) {
   m_PropReadWriteStringArrayValue = value;
-  TestSignalStringArray_signal.emit(value);
+  FuTestSignalStringArray_signal.emit(value);
   return true;
 }
-bool TestImpl::TestPropReadWriteByteString_setHandler(std::string value) {
+bool FuTestImpl::FuTestPropReadWriteByteString_setHandler(std::string value) {
   m_PropReadWriteByteStringValue = value;
-  TestSignalByteString_signal.emit(value);
+  FuTestSignalByteString_signal.emit(value);
   return true;
 }
-bool TestImpl::TestPropReadWriteSignature_setHandler(std::string value) {
+bool FuTestImpl::FuTestPropReadWriteSignature_setHandler(std::string value) {
   m_PropReadWriteSignatureValue = value;
-  TestSignalSignature_signal.emit(value);
+  FuTestSignalSignature_signal.emit(value);
   return true;
 }
-bool TestImpl::TestPropReadWriteObjectPath_setHandler(std::string value) {
+bool FuTestImpl::FuTestPropReadWriteObjectPath_setHandler(std::string value) {
   m_PropReadWriteObjectPathValue = value;
-  TestSignalObjectPath_signal.emit(value);
+  FuTestSignalObjectPath_signal.emit(value);
   return true;
 }
-bool TestImpl::TestPropReadWriteString_setHandler(std::string value) {
+bool FuTestImpl::FuTestPropReadWriteString_setHandler(std::string value) {
   m_PropReadWriteStringValue = value;
-  TestSignalString_signal.emit(value);
+  FuTestSignalString_signal.emit(value);
   return true;
 }
-bool TestImpl::TestPropReadWriteDouble_setHandler(double value) {
+bool FuTestImpl::FuTestPropReadWriteDouble_setHandler(double value) {
   m_PropReadWriteDoubleValue = value;
-  TestSignalDouble_signal.emit(value);
+  FuTestSignalDouble_signal.emit(value);
   return true;
 }
-bool TestImpl::TestPropReadWriteUInt64_setHandler(guint64 value) {
+bool FuTestImpl::FuTestPropReadWriteUInt64_setHandler(guint64 value) {
   m_PropReadWriteUInt64Value = value;
-  TestSignalUInt64_signal.emit(value);
+  FuTestSignalUInt64_signal.emit(value);
   return true;
 }
-bool TestImpl::TestPropReadWriteInt64_setHandler(gint64 value) {
+bool FuTestImpl::FuTestPropReadWriteInt64_setHandler(gint64 value) {
   m_PropReadWriteInt64Value = value;
-  TestSignalInt64_signal.emit(value);
+  FuTestSignalInt64_signal.emit(value);
   return true;
 }
-bool TestImpl::TestPropReadWriteUInt_setHandler(guint32 value) {
+bool FuTestImpl::FuTestPropReadWriteUInt_setHandler(guint32 value) {
   m_PropReadWriteUIntValue = value;
-  TestSignalUInt_signal.emit(value);
+  FuTestSignalUInt_signal.emit(value);
   return true;
 }
-bool TestImpl::TestPropReadWriteInt_setHandler(gint32 value) {
+bool FuTestImpl::FuTestPropReadWriteInt_setHandler(gint32 value) {
   m_PropReadWriteIntValue = value;
-  TestSignalInt_signal.emit(value);
+  FuTestSignalInt_signal.emit(value);
   return true;
 }
-bool TestImpl::TestPropReadWriteUInt16_setHandler(guint16 value) {
+bool FuTestImpl::FuTestPropReadWriteUInt16_setHandler(guint16 value) {
   m_PropReadWriteUInt16Value = value;
-  TestSignalUInt16_signal.emit(value);
+  FuTestSignalUInt16_signal.emit(value);
   return true;
 }
-bool TestImpl::TestPropReadWriteInt16_setHandler(gint16 value) {
+bool FuTestImpl::FuTestPropReadWriteInt16_setHandler(gint16 value) {
   m_PropReadWriteInt16Value = value;
-  TestSignalInt16_signal.emit(value);
+  FuTestSignalInt16_signal.emit(value);
   return true;
 }
-bool TestImpl::TestPropReadWriteChar_setHandler(guchar value) {
+bool FuTestImpl::FuTestPropReadWriteChar_setHandler(guchar value) {
   m_PropReadWriteCharValue = value;
-  TestSignalChar_signal.emit(value);
+  FuTestSignalChar_signal.emit(value);
   return true;
 }
-bool TestImpl::TestPropReadWriteBoolean_setHandler(bool value) {
+bool FuTestImpl::FuTestPropReadWriteBoolean_setHandler(bool value) {
   m_PropReadWriteBooleanValue = value;
-  TestSignalBoolean_signal.emit(value);
+  FuTestSignalBoolean_signal.emit(value);
   return true;
 }
 
-bool TestImpl::TestPropInternalReadPropertyChange_setHandler(gint32 value) {
-  m_TestPropInternalReadPropertyChangeValue = value;
+bool FuTestImpl::FuTestPropInternalReadPropertyChange_setHandler(gint32 value) {
+  m_FuTestPropInternalReadPropertyChangeValue = value;
   return true;
 }
 
-bool TestImpl::TestPropInternalReadWritePropertyChange_setHandler(
+bool FuTestImpl::FuTestPropInternalReadWritePropertyChange_setHandler(
     gint32 value) {
-  m_TestPropInternalReadWritePropertyChangeValue = value;
+  m_FuTestPropInternalReadWritePropertyChangeValue = value;
   return true;
 }
 
@@ -419,8 +419,8 @@ int main() {
   Glib::init();
   Gio::init();
 
-  TestImpl impl;
-  impl.connect(Gio::DBus::BUS_TYPE_SESSION, "org.gdbus.codegen.glibmm.Test");
+  FuTestImpl impl;
+  impl.connect(Gio::DBus::BUS_TYPE_SESSION, "org.gdbus.codegen.glibmm.FuTest");
 
   Glib::RefPtr<Glib::MainLoop> ml = Glib::MainLoop::create();
   ml->run();

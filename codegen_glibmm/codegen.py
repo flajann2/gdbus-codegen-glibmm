@@ -888,6 +888,20 @@ class CodeGenerator:
         """ Generate introduction for promise cpp file """
         self.emit_cpp_f ('#include "%s"' % self.promise_h.name)
 
+    def generate_promise_introspection(self):
+        """ Generate introspection XML for all introspection XML files """
+        for i in range(0, len(self.node_xmls)):
+            node_xml = self.node_xmls[i]
+
+            # This will encode the XML introspection data as raw bytes. This is
+            # to avoid any formatting issues when embedding the introspection
+            # data in the stub file.
+            self.emit_cpp_f ("static const char interfaceXml%d[] = R\"XML_DELIMITER(" % i, False)
+            for char in node_xml:
+                self.emit_cpp_f (char, False)
+            self.emit_cpp_f (")XML_DELIMITER\";")
+
+
     def define_types_promise_creation(self, i):
         # Constructor
         self.emit_cpp_f(dedent('''
@@ -1397,35 +1411,33 @@ class CodeGenerator:
             self.generate_property_handlers_proxy(i)
             self.generate_signal_handler_proxy(i)
             self.generate_proxy_creation(i)
-
-        # Stub
-        self.generate_stub_introspection()
-        self.generate_stub_intro()
-        self.declare_types_stub()
-        for i in self.ifaces:
-            self.define_types_stub_creation(i)
-            self.define_types_method_handlers_stub(i)
-            self.define_types_property_get_handlers_stub(i)
-            self.define_types_property_set_handlers_stub(i)
-            self.define_types_signal_emitters_stub(i)
-            self.define_types_dbus_callbacks_stub(i)
-            self.define_types_property_setters_stub(i)
-            self.define_types_emit_stub(i)
-
-        # Promise
+       
         if self.if_promises:
+            self.generate_promise_introspection()
             self.generate_promise_intro()
             self.declare_types_promise()
             for i in self.ifaces:
                 self.define_types_promise_creation(i)
-                # TODO: The rest here will change.
                 self.define_types_method_handlers_promise(i)
                 self.define_types_property_get_handlers_promise(i)
                 self.define_types_property_set_handlers_promise(i)
                 self.define_types_signal_emitters_promise(i)
                 self.define_types_dbus_callbacks_promise(i)
                 self.define_types_property_setters_promise(i)
-                self.define_types_emit_promise(i)
+                self.define_types_emit_promise(i)        
+        else: # Stubs
+            self.generate_stub_introspection()
+            self.generate_stub_intro()
+            self.declare_types_stub()
+            for i in self.ifaces:
+                self.define_types_stub_creation(i)
+                self.define_types_method_handlers_stub(i)
+                self.define_types_property_get_handlers_stub(i)
+                self.define_types_property_set_handlers_stub(i)
+                self.define_types_signal_emitters_stub(i)
+                self.define_types_dbus_callbacks_stub(i)
+                self.define_types_property_setters_stub(i)
+                self.define_types_emit_stub(i)
         
         # Common
         self.generate_common_intro()

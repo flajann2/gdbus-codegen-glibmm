@@ -91,10 +91,17 @@ def codegen_main():
     if cpp_code:
         proxy_h   = open(cpp_code + "_proxy" + '.h', 'w')
         proxy_cpp = open(cpp_code + "_proxy" + '.cpp', 'w')
-        stub_h   = open(cpp_code + "_stub" + '.h', 'w')
-        stub_cpp = open(cpp_code + "_stub" + '.cpp', 'w')
-        promise_h   = open(cpp_code + "_promise" + '.h', 'w')
-        promise_cpp = open(cpp_code + "_promise" + '.cpp', 'w')
+        if if_promises:
+            stub_h   = None
+            stub_cpp = None
+            promise_h   = open(cpp_code + "_promise" + '.h', 'w')
+            promise_cpp = open(cpp_code + "_promise" + '.cpp', 'w')
+        else: # stubs
+            stub_h   = open(cpp_code + "_stub" + '.h', 'w')
+            stub_cpp = open(cpp_code + "_stub" + '.cpp', 'w')
+            promise_h   = None
+            promise_cpp = None
+            
         common_h   = open(cpp_code + "_common" + '.h', 'w')
         common_cpp = open(cpp_code + "_common" + '.cpp', 'w')
         gen = codegen.CodeGenerator(all_ifaces,
@@ -108,8 +115,10 @@ def codegen_main():
         ret = gen.generate()
         proxy_h.close()
         proxy_cpp.close()
-        stub_h.close()
-        stub_cpp.close()
+        if stub_h:   stub_h.close()
+        if stub_cpp: stub_cpp.close()
+        if promise_h:   promise_h.close()
+        if promise_cpp: promise_cpp.close()
 
     sys.exit(0)
 

@@ -15,8 +15,6 @@ ENDIF ()
 SET (GENERATED_PROMISE
     ${CMAKE_BINARY_DIR}/generated/futures_promise.cpp
     ${CMAKE_BINARY_DIR}/generated/futures_promise.h
-    ${CMAKE_BINARY_DIR}/generated/futures_stub.cpp
-    ${CMAKE_BINARY_DIR}/generated/futures_stub.h
     ${CMAKE_BINARY_DIR}/generated/futures_common.cpp
     ${CMAKE_BINARY_DIR}/generated/futures_common.h
 )
@@ -34,7 +32,6 @@ ADD_CUSTOM_COMMAND (OUTPUT ${GENERATED_PROMISE}
 SET (SOURCES
     testpromisemain.cpp
     ${CMAKE_BINARY_DIR}/generated/futures_promise.cpp
-    ${CMAKE_BINARY_DIR}/generated/futures_stub.cpp
     ${CMAKE_BINARY_DIR}/generated/futures_common.cpp
 )
 
@@ -42,7 +39,6 @@ SET (HEADERS
     testpromisemain.h
     ../common/tools.h
     ${CMAKE_BINARY_DIR}/generated/futures_promise.h
-    ${CMAKE_BINARY_DIR}/generated/futures_stub.h
     ${CMAKE_BINARY_DIR}/generated/futures_common.h
 )
 
