@@ -960,6 +960,213 @@ class CodeGenerator:
         }}''').format(**locals()))
         pass        
 
+    def define_types_method_handlers_promise(self, i):
+        """ Generate code for handling and dispatching method calls in the
+        stub. This code will trigger the correct user-defined function with
+        parameter types converted to std:: c++ types.
+        @param Interface i is the interface to generate method handlers for
+        """
+        self.emit_cpp_f(dedent('''
+        void {i.cpp_namespace_name}::on_method_call(const Glib::RefPtr<Gio::DBus::Connection>& /* connection */,
+                           const Glib::ustring& /* sender */,
+                           const Glib::ustring& /* object_path */,
+                           const Glib::ustring& /* interface_name */,
+                           const Glib::ustring& method_name,
+                           const Glib::VariantContainerBase& parameters,
+                           const Glib::RefPtr<Gio::DBus::MethodInvocation>& invocation)
+        {{
+        ''').format(**locals()))
+        for m in i.methods:
+            #TODO: Make more thorough checks here. Method name is not enough.
+            self.emit_cpp_f("    if (method_name.compare(\"%s\") == 0) {" % m.name)
+            for ai in range(len(m.in_args)):
+                a = m.in_args[ai]
+                if a.signature == "v":
+                    # Variants are deconstructed differently than the other types
+                    self.emit_cpp_f("        Glib::VariantContainerBase containerBase = parameters;")
+                    self.emit_cpp_f("        GVariant *output%s;" % (ai))
+                    self.emit_cpp_f('        g_variant_get_child(containerBase.gobj(), %s, "v", &output%s);' % (ai, ai))
+                    self.emit_cpp_f("        Glib::VariantBase p_%s;" % (a.name))
+                    self.emit_cpp_f("        p_%s = Glib::VariantBase(output%s);" % (a.name, ai))
+                    self.emit_cpp_f("")
+                else:
+                    self.emit_cpp_f("        Glib::Variant<%s > base_%s;" % (a.cpptype_get, a.name))
+                    self.emit_cpp_f("        parameters.get_child(base_%s, %d);" % (a.name, ai))
+                    self.emit_cpp_f("        %s p_%s;" % (a.cpptype_get, a.name))
+                    self.emit_cpp_f("        p_%s = base_%s.get();" % (a.name, a.name))
+                    self.emit_cpp_f("")
+            self.emit_cpp_f("        %s(" % m.name)
+            for a in m.in_args:
+                cpptype_cast = a.cpptype_get_cast
+                # Prepend the class name if this is the generic "TypeWrap" class
+                if cpptype_cast.startswith("TypeWrap"):
+                    cpptype_cast = i.cpp_class_name + cpptype_cast
+                self.emit_cpp_f("            %s(p_%s)," % (cpptype_cast, a.name))
+            self.emit_cpp_f("            {i.cpp_class_name}MessageHelper(invocation));".format(**locals()))
+            self.emit_cpp_f("    }")
+        self.emit_cpp_f("    }")
+
+    def define_types_property_get_handlers_promise(self, i):
+        object_path = "/" + i.name.replace(".", "/")
+
+        self.emit_cpp_f(dedent('''
+        void {i.cpp_namespace_name}::on_interface_get_property(Glib::VariantBase& property,
+                                               const Glib::RefPtr<Gio::DBus::Connection>& connection,
+                                               const Glib::ustring& sender,
+                                               const Glib::ustring& object_path,
+                                               const Glib::ustring& interface_name,
+                                               const Glib::ustring& property_name) {{
+        ''').format(**locals()))
+
+        for p in i.properties:
+            if p.readable:
+                cpptype_to_dbus = p.cpptype_to_dbus
+                # Prepend the class name if this is the generic "TypeWrap" class
+                if cpptype_to_dbus.startswith("TypeWrap"):
+                    cpptype_to_dbus = i.cpp_class_name + cpptype_to_dbus
+                self.emit_cpp_f(dedent('''
+                    if (property_name.compare("{p.name}") == 0) {{
+                        property = Glib::Variant<{p.cpptype_get} >::create({cpptype_to_dbus}({p.name}_get()));
+                    }}
+                ''').format(**locals()))
+
+        self.emit_cpp_f("}")
+
+    def define_types_property_set_handlers_promise(self, i):
+        object_path = "/" + i.name.replace(".", "/")
+        self.emit_cpp_f(dedent('''
+        bool {i.cpp_namespace_name}::on_interface_set_property(
+               const Glib::RefPtr<Gio::DBus::Connection>& connection,
+               const Glib::ustring& sender,
+               const Glib::ustring& object_path,
+               const Glib::ustring& interface_name,
+               const Glib::ustring& property_name,
+               const Glib::VariantBase& value) {{
+        ''').format(**locals()))
+
+        for p in i.properties:
+            self.emit_cpp_f(dedent('''
+                if (property_name.compare("{p.name}") == 0) {{
+                    try {{
+                        Glib::Variant<{p.cpptype_get} > castValue = Glib::VariantBase::cast_dynamic<Glib::Variant<{p.cpptype_get} > >(value);
+                        {p.cpptype_out} val;''').format(**locals()))
+            cpptype_cast = p.cpptype_get_cast
+            # Prepend the class name if this is the generic "TypeWrap" class
+            if cpptype_cast.startswith("TypeWrap"):
+                cpptype_cast = i.cpp_class_name + cpptype_cast
+            self.emit_cpp_f(dedent('''
+                        val = {cpptype_cast}(castValue.get());''').format(**locals()))
+            self.emit_cpp_f('''        {p.name}_set(val);'''.format(**locals()))
+            self.emit_cpp_f(dedent('''
+                    }} catch (std::bad_cast e) {{
+                        g_warning ("Bad cast when casting {p.name}");
+                    }}
+                }}
+            ''').format(**locals()))
+
+        self.emit_cpp_f(dedent('''
+            return true;
+        }}
+        ''').format(**locals()))
+
+    def define_types_signal_emitters_promise(self, i):
+        object_path = "/" + i.name.replace(".", "/")
+
+        for s in i.signals:
+            # Sigc does not allow an infinite number of parameters for signals.
+            # The maximum number of signals is specified in SIGNAL_MAX_PARAM. A
+            # warning is issued if this is exceeded, and no signal handler uis
+            # generated.
+            if (len(s.args) > SIGNAL_MAX_PARAM):
+                print "WARNING: signal %s has too many parameters, skipping" % s.name
+                continue
+            args = []
+
+            for a in s.args:
+                args.append(a.cpptype_out + " " + a.name)
+
+            argsStr = ", ".join(args)
+            self.emit_cpp_f(dedent('''void {i.cpp_namespace_name}::{s.name}_emitter({argsStr}) {{
+            std::vector<Glib::VariantBase> paramsList;''').format(**locals()))
+
+            for a in s.args:
+                cpptype_to_dbus = a.cpptype_to_dbus
+                # Prepend the class name if this is the generic "TypeWrap" class
+                if cpptype_to_dbus.startswith("TypeWrap"):
+                    cpptype_to_dbus = i.cpp_class_name + cpptype_to_dbus
+                self.emit_cpp_f(dedent('''
+                paramsList.push_back(Glib::Variant<{a.cpptype_get} >::create({cpptype_to_dbus}({a.name})));;
+                ''').format(**locals()))
+
+            self.emit_cpp_f(dedent('''      m_connection->emit_signal(
+                    "{object_path}",
+                    "{s.iface_name}",
+                    "{s.name}",
+                    Glib::ustring(),
+                    Glib::Variant<std::vector<Glib::VariantBase> >::create_tuple(paramsList));
+            }}''').format(**locals()))
+
+    def define_types_dbus_callbacks_promise(self, i):
+        object_path = "/" + i.name.replace(".", "/")
+        self.emit_cpp_f(dedent('''
+        void {i.cpp_namespace_name}::on_bus_acquired(const Glib::RefPtr<Gio::DBus::Connection>& connection,
+                                 const Glib::ustring& /* name */) {{
+            registeredId = register_object(connection,
+                                           "{object_path}");
+            m_connection = connection;
+
+            return;
+        }}
+        void {i.cpp_namespace_name}::on_name_acquired(const Glib::RefPtr<Gio::DBus::Connection>& /* connection */,
+                              const Glib::ustring& /* name */) {{}}
+
+        void {i.cpp_namespace_name}::on_name_lost(const Glib::RefPtr<Gio::DBus::Connection>& connection,
+                          const Glib::ustring& /* name */) {{}}
+        ''').format(**locals()))
+
+    def define_types_property_setters_promise(self, i):
+        for p in i.properties:
+            cpptype_to_dbus = p.cpptype_to_dbus
+            # Prepend the class name if this is the generic "TypeWrap" class
+            if cpptype_to_dbus.startswith("TypeWrap"):
+                cpptype_to_dbus = i.cpp_class_name + cpptype_to_dbus
+            self.emit_cpp_f(dedent('''
+            bool {i.cpp_namespace_name}::{p.name}_set({p.cpptype_in} value) {{
+                if ({p.name}_setHandler(value)) {{
+                    Glib::Variant<{p.cpptype_get} > value_get = Glib::Variant<{p.cpptype_get} >::create({cpptype_to_dbus}({p.name}_get()));
+                    emitSignal("{p.name}", value_get);
+                    return true;
+                }}
+
+                return false;
+            }}''').format(**locals()))
+
+    def define_types_emit_promise(self, i):
+            self.emit_cpp_f(dedent('''
+            bool {i.cpp_namespace_name}::emitSignal(const std::string& propName, Glib::VariantBase& value) {{
+                std::map<Glib::ustring, Glib::VariantBase> changedProps;
+                std::vector<Glib::ustring> changedPropsNoValue;
+
+                changedProps[propName] = value;
+
+                Glib::Variant<std::map<Glib::ustring,  Glib::VariantBase> > changedPropsVar = Glib::Variant<std::map <Glib::ustring, Glib::VariantBase> >::create (changedProps);
+                Glib::Variant<std::vector<Glib::ustring> > changedPropsNoValueVar = Glib::Variant<std::vector<Glib::ustring> >::create(changedPropsNoValue);
+                std::vector<Glib::VariantBase> ps;
+                ps.push_back(Glib::Variant<Glib::ustring>::create(m_interfaceName));
+                ps.push_back(changedPropsVar);
+                ps.push_back(changedPropsNoValueVar);
+                Glib::VariantContainerBase propertiesChangedVariant = Glib::Variant<std::vector<Glib::VariantBase> >::create_tuple(ps);
+
+                m_connection->emit_signal(
+                    m_objectPath,
+                    "org.freedesktop.DBus.Properties",
+                    "PropertiesChanged",
+                    Glib::ustring(),
+                    propertiesChangedVariant);
+
+                return true;
+            }}''').format(**locals()))
+ 
     def declare_types_promise(self):
         """ Generate types and classes for the promise. This will generate the
         complete class needed for implementing the promises. The code is placed in
@@ -1212,13 +1419,13 @@ class CodeGenerator:
             for i in self.ifaces:
                 self.define_types_promise_creation(i)
                 # TODO: The rest here will change.
-                #self.define_types_method_handlers_stub(i)
-                #self.define_types_property_get_handlers_stub(i)
-                #self.define_types_property_set_handlers_stub(i)
-                #self.define_types_signal_emitters_stub(i)
-                #self.define_types_dbus_callbacks_stub(i)
-                #self.define_types_property_setters_stub(i)
-                #self.define_types_emit_stub(i)
+                self.define_types_method_handlers_promise(i)
+                self.define_types_property_get_handlers_promise(i)
+                self.define_types_property_set_handlers_promise(i)
+                self.define_types_signal_emitters_promise(i)
+                self.define_types_dbus_callbacks_promise(i)
+                self.define_types_property_setters_promise(i)
+                self.define_types_emit_promise(i)
         
         # Common
         self.generate_common_intro()
