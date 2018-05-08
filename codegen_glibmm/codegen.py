@@ -884,10 +884,6 @@ class CodeGenerator:
 
 
     ### Promises
-    def generate_promise_intro(self):
-        """ Generate introduction for promise cpp file """
-        self.emit_cpp_f ('#include "%s"' % self.promise_h.name)
-
     def generate_promise_introspection(self):
         """ Generate introspection XML for all introspection XML files """
         for i in range(0, len(self.node_xmls)):
@@ -901,7 +897,139 @@ class CodeGenerator:
                 self.emit_cpp_f (char, False)
             self.emit_cpp_f (")XML_DELIMITER\";")
 
+    def generate_promise_intro(self):
+        """ Generate introduction for promise cpp file """
+        self.emit_cpp_f ('#include "%s"' % self.promise_h.name)
 
+    def declare_types_promise(self):
+        """ Generate types and classes for the promise. This will generate the
+        complete class needed for implementing the promises. The code is placed in
+        the header file for the promise.
+        """
+        self.emit_h_f(dedent('''
+        #pragma once
+        #include <string>
+        #include <glibmm.h>
+        #include <giomm.h>
+        #include <future>
+        #include <tuple>
+        #include "{self.common_h.name}"
+        ''').format(**locals()))
+
+        # Generate a separate class for each interface
+        for i in self.ifaces:
+            for ns in i.cpp_namespace_name.split("::")[:-1]:
+                self.emit_h_f ("namespace %s {" % ns)
+
+            self.emit_h_f(dedent('''
+            class {i.cpp_class_name} {{
+            public:
+                {i.cpp_class_name}();
+                virtual ~{i.cpp_class_name}();
+
+                guint register_object(const Glib::RefPtr<Gio::DBus::Connection> &connection,
+                                      const Glib::ustring &object_path);
+
+                // deprecated:
+                void connect(Gio::DBus::BusType, std::string);
+            ''').format(**locals()))
+            for p in i.properties:
+                self.emit_h_f("    bool {p.name}_set({p.cpptype_in} value);".format(**locals()))
+
+            self.emit_h_f("protected:")
+
+            # Generate all methods and tuple parameters in the interface
+            for m in i.methods:
+                # Async call method
+                self.emit_h_f("virtual void %s (" % m.name)
+
+                for a in m.in_args:
+                    self.emit_h_f("    %s %s," % (a.cpptype_in, a.name))
+
+                self.emit_h_f("    {i.cpp_class_name}MessageHelper msg) = 0;".format(**locals()))
+
+                # tuple params
+                self.emit_h_f("std::promise<std::tuple<")
+                for a in m.in_args:
+                    self.emit_h_f("%s," % (a.cpptype_in))
+                self.emit_h_f("    {i.cpp_class_name}MessageHelper>> p_{m.name};".format(**locals()))                   
+
+            # Generate getters and setters for all properties, and the promises as well
+            for p in i.properties:
+                self.emit_h_f("\nvirtual {p.cpptype_out} {p.name}_get() = 0;".format(**locals()))
+                self.emit_h_f("std::promise<{p.cpptype_out}> p_{p.name};".format(**locals()))
+                self.emit_h_f(dedent('''
+                    /** Handle the setting of a property
+                     *  This method will be called as a result of a call to <PropName>_set
+                     *  and should implement the actual setting of the property value.
+                     *  Should return true on sucess and false otherwise.
+                     */'''))
+                self.emit_h_f("virtual bool {p.name}_setHandler({p.cpptype_in} value) = 0;".format(**locals()))
+
+            # Generate all signals
+            for s in i.signals:
+                if (len(s.args) > SIGNAL_MAX_PARAM):
+                    print "WARNING: signal %s has too many parameters, skipping" % s.name
+                    continue
+                args = []
+
+                for a in s.args:
+                    args.append(a.cpptype_out)
+
+                argsStr = ", ".join(args)
+                self.emit_h_f(dedent('''
+                void {s.name}_emitter({argsStr});
+                sigc::signal<void, {argsStr} > {s.name}_signal;''').format(**locals()))
+
+            # Generate the rest of the event handlers
+            self.emit_h_f(dedent("""
+            void on_bus_acquired(const Glib::RefPtr<Gio::DBus::Connection>& connection,
+                                 const Glib::ustring& /* name */);
+
+            void on_name_acquired(const Glib::RefPtr<Gio::DBus::Connection>& /* connection */,
+                                  const Glib::ustring& /* name */);
+
+            void on_name_lost(const Glib::RefPtr<Gio::DBus::Connection>& connection,
+                              const Glib::ustring& /* name */);
+
+            void on_method_call(const Glib::RefPtr<Gio::DBus::Connection>& /* connection */,
+                               const Glib::ustring& /* sender */,
+                               const Glib::ustring& /* object_path */,
+                               const Glib::ustring& /* interface_name */,
+                               const Glib::ustring& method_name,
+                               const Glib::VariantContainerBase& parameters,
+                               const Glib::RefPtr<Gio::DBus::MethodInvocation>& invocation);
+
+            void on_interface_get_property(Glib::VariantBase& property,
+                                                   const Glib::RefPtr<Gio::DBus::Connection>& connection,
+                                                   const Glib::ustring& sender,
+                                                   const Glib::ustring& object_path,
+                                                   const Glib::ustring& interface_name,
+                                                   const Glib::ustring& property_name);
+
+            bool on_interface_set_property(
+                   const Glib::RefPtr<Gio::DBus::Connection>& connection,
+                   const Glib::ustring& sender,
+                   const Glib::ustring& object_path,
+                   const Glib::ustring& interface_name,
+                   const Glib::ustring& property_name,
+                   const Glib::VariantBase& value);
+
+            private:
+            bool emitSignal(const std::string& propName, Glib::VariantBase& value);
+
+            guint connectionId, registeredId;
+            Glib::RefPtr<Gio::DBus::NodeInfo> introspection_data;
+            Glib::RefPtr<Gio::DBus::Connection> m_connection;
+            std::string m_objectPath;
+            std::string m_interfaceName;
+            };"""))
+
+            for ns in reversed(i.cpp_namespace_name.split("::")[:-1]):
+                self.emit_h_f("}// %s" % ns)
+
+            self.emit_h_f("")       
+        
     def define_types_promise_creation(self, i):
         # Constructor
         self.emit_cpp_f(dedent('''
@@ -1181,127 +1309,6 @@ class CodeGenerator:
                 return true;
             }}''').format(**locals()))
  
-    def declare_types_promise(self):
-        """ Generate types and classes for the promise. This will generate the
-        complete class needed for implementing the promises. The code is placed in
-        the header file for the promise.
-        """
-        self.emit_h_f(dedent('''
-        #pragma once
-        #include <string>
-        #include <glibmm.h>
-        #include <giomm.h>
-        #include <future>
-        #include "{self.common_h.name}"
-        ''').format(**locals()))
-
-        # Generate a separate class for each interface
-        for i in self.ifaces:
-            for ns in i.cpp_namespace_name.split("::")[:-1]:
-                self.emit_h_f ("namespace %s {" % ns)
-
-            self.emit_h_f(dedent('''
-            class {i.cpp_class_name} {{
-            public:
-                {i.cpp_class_name}();
-                virtual ~{i.cpp_class_name}();
-
-                guint register_object(const Glib::RefPtr<Gio::DBus::Connection> &connection,
-                                      const Glib::ustring &object_path);
-
-                // deprecated:
-                void connect(Gio::DBus::BusType, std::string);
-            ''').format(**locals()))
-            for p in i.properties:
-                self.emit_h_f("    bool {p.name}_set({p.cpptype_in} value);".format(**locals()))
-
-            self.emit_h_f("protected:")
-
-            # Generate all methods in the interface
-            for m in i.methods:
-                # Async call method
-                self.emit_h_f("virtual void %s (" % m.name)
-
-                for a in m.in_args:
-                    self.emit_h_f("    %s %s," % (a.cpptype_in, a.name))
-
-                self.emit_h_f("    {i.cpp_class_name}MessageHelper msg) = 0;".format(**locals()))
-
-            # Generate getters and setters for all properties
-            for p in i.properties:
-                self.emit_h_f("virtual {p.cpptype_out} {p.name}_get() = 0;".format(**locals()))
-                self.emit_h_f(dedent('''
-                    /* Handle the setting of a property
-                        * This method will be called as a result of a call to <PropName>_set
-                        * and should implement the actual setting of the property value.
-                        * Should return true on sucess and false otherwise.
-                        */'''))
-                self.emit_h_f("virtual bool {p.name}_setHandler({p.cpptype_in} value) = 0;".format(**locals()))
-
-            # Generate all signals
-            for s in i.signals:
-                if (len(s.args) > SIGNAL_MAX_PARAM):
-                    print "WARNING: signal %s has too many parameters, skipping" % s.name
-                    continue
-                args = []
-
-                for a in s.args:
-                    args.append(a.cpptype_out)
-
-                argsStr = ", ".join(args)
-                self.emit_h_f(dedent('''
-                void {s.name}_emitter({argsStr});
-                sigc::signal<void, {argsStr} > {s.name}_signal;''').format(**locals()))
-
-            # Generate the rest of the event handlers
-            self.emit_h_f(dedent("""
-            void on_bus_acquired(const Glib::RefPtr<Gio::DBus::Connection>& connection,
-                                 const Glib::ustring& /* name */);
-
-            void on_name_acquired(const Glib::RefPtr<Gio::DBus::Connection>& /* connection */,
-                                  const Glib::ustring& /* name */);
-
-            void on_name_lost(const Glib::RefPtr<Gio::DBus::Connection>& connection,
-                              const Glib::ustring& /* name */);
-
-            void on_method_call(const Glib::RefPtr<Gio::DBus::Connection>& /* connection */,
-                               const Glib::ustring& /* sender */,
-                               const Glib::ustring& /* object_path */,
-                               const Glib::ustring& /* interface_name */,
-                               const Glib::ustring& method_name,
-                               const Glib::VariantContainerBase& parameters,
-                               const Glib::RefPtr<Gio::DBus::MethodInvocation>& invocation);
-
-            void on_interface_get_property(Glib::VariantBase& property,
-                                                   const Glib::RefPtr<Gio::DBus::Connection>& connection,
-                                                   const Glib::ustring& sender,
-                                                   const Glib::ustring& object_path,
-                                                   const Glib::ustring& interface_name,
-                                                   const Glib::ustring& property_name);
-
-            bool on_interface_set_property(
-                   const Glib::RefPtr<Gio::DBus::Connection>& connection,
-                   const Glib::ustring& sender,
-                   const Glib::ustring& object_path,
-                   const Glib::ustring& interface_name,
-                   const Glib::ustring& property_name,
-                   const Glib::VariantBase& value);
-
-            private:
-            bool emitSignal(const std::string& propName, Glib::VariantBase& value);
-
-            guint connectionId, registeredId;
-            Glib::RefPtr<Gio::DBus::NodeInfo> introspection_data;
-            Glib::RefPtr<Gio::DBus::Connection> m_connection;
-            std::string m_objectPath;
-            std::string m_interfaceName;
-            };"""))
-
-            for ns in reversed(i.cpp_namespace_name.split("::")[:-1]):
-                self.emit_h_f("}// %s" % ns)
-
-            self.emit_h_f("")       
-
     ### Common
     def generate_common_intro(self):
         self.emit_h_common(dedent("""
@@ -1443,3 +1450,5 @@ class CodeGenerator:
         self.generate_common_intro()
         for i in self.ifaces:
             self.generate_common_classes(i)
+
+            
