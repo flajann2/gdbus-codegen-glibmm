@@ -960,19 +960,21 @@ class CodeGenerator:
                 # shared future
                 self.emit_h_f("std::shared_future<{mtuple}> fm_{m.name};".format(**locals()))
                
-            # wake-up promise for methods
+            # wake-up promise and future for methods
             self.emit_h_f(dedent('''
-            /** This promise will receive a signal when
+            /** This promise (and future) will receive a signal when
              *  one of the methods were called. There is no data here.
              *  This is just a signaling promise to allow you to handle
              *  an incoming call synchronously.
              */'''))
             self.emit_h_f("    std::promise<void> pm_wakeUp;")
+            self.emit_h_f("    std::shared_future<void> fm_wakeUp;")
                 
-            # Generate getters and setters for all properties, and the promises as well
+            # Generate getters and setters for all properties, and the promises and futures as well
             for p in i.properties:
                 self.emit_h_f("\nvirtual {p.cpptype_out} {p.name}_get() = 0;".format(**locals()))
                 self.emit_h_f("std::promise<{p.cpptype_out}> pp_{p.name};".format(**locals()))
+                self.emit_h_f("std::shared_future<{p.cpptype_out}> fp_{p.name};".format(**locals()))
                 self.emit_h_f(dedent('''
                     /** Handle the setting of a property
                      *  This method will be called as a result of a call to <PropName>_set
@@ -990,6 +992,7 @@ class CodeGenerator:
              *  updates synchronously.
              */'''))
             self.emit_h_f("    std::promise<void> pp_wakeUp;")
+            self.emit_h_f("    std::shared_future<void> fp_wakeUp;")
 
             # Generate all signals
             for s in i.signals:
@@ -1056,10 +1059,11 @@ class CodeGenerator:
             self.emit_h_f("")       
         
     def define_types_promise_creation(self, i):
-        # Constructor
+        ## Constructor
         self.emit_cpp_f(dedent('''
         {i.cpp_namespace_name}::{i.cpp_class_name} () : connectionId(0), registeredId(0), m_interfaceName("{i.name}") {{
         ''').format(**locals()))
+        self.emit_cpp_f("    /// Signals conections")
         for s in i.signals:
             # Sigc does not allow an infinite number of parameters for signals.
             # The maximum number of signals is specified in SIGNAL_MAX_PARAM. A
@@ -1074,6 +1078,9 @@ class CodeGenerator:
         # interfaceXml variable contains our XML, and use the correct one
         # instead. This code will break if there are several introspection XML
         # files specified.
+
+        # Set up promises and futures.
+        self.emit_cpp_f("\n    /// Promises binding to Shared Futures.")
         self.emit_cpp_f(dedent('''
         }}
 
