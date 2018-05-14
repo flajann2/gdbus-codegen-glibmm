@@ -946,7 +946,9 @@ class CodeGenerator:
                 for a in m.in_args:
                     self.emit_h_f("    %s %s," % (a.cpptype_in, a.name))
 
-                self.emit_h_f("    {i.cpp_class_name}MessageHelper msg) = 0;".format(**locals()))
+                self.emit_h_f(dedent('''{i.cpp_class_name}MessageHelper msg) {{
+
+                                     }}'''.format(**locals())))
 
                 # create the method tuple
                 mtuple = "std::tuple<"
