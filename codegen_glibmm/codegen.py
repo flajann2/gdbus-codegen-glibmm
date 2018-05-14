@@ -948,12 +948,18 @@ class CodeGenerator:
 
                 self.emit_h_f("    {i.cpp_class_name}MessageHelper msg) = 0;".format(**locals()))
 
-                # tuple params
-                self.emit_h_f("std::promise<std::tuple<")
+                # create the method tuple
+                mtuple = "std::tuple<"
                 for a in m.in_args:
-                    self.emit_h_f("%s," % (a.cpptype_in))
-                self.emit_h_f("    {i.cpp_class_name}MessageHelper>> pm_{m.name};".format(**locals()))
+                    mtuple += "%s," % (a.cpptype_in)
+                mtuple += "{i.cpp_class_name}MessageHelper>".format(**locals())
+                
+                # promise
+                self.emit_h_f("std::promise<{mtuple}> pm_{m.name};".format(**locals()))
 
+                # shared future
+                self.emit_h_f("std::shared_future<{mtuple}> fm_{m.name};".format(**locals()))
+               
             # wake-up promise for methods
             self.emit_h_f(dedent('''
             /** This promise will receive a signal when
