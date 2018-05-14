@@ -1079,8 +1079,19 @@ class CodeGenerator:
         # instead. This code will break if there are several introspection XML
         # files specified.
 
-        # Set up promises and futures.
-        self.emit_cpp_f("\n    /// Promises binding to Shared Futures.")
+        # Set up promises and futures for methods
+        self.emit_cpp_f("\n    /// Promises binding to Shared Futures for member function wrappers. pm --> fm")
+        for m in i.methods:
+            self.emit_cpp_f("    fm_{m.name} = pm_{m.name}.get_future();".format(**locals()))
+        self.emit_cpp_f(    "    fm_wakeUp = pm_wakeUp.get_future();")
+        
+        # Set up promises and futures for properties
+        self.emit_cpp_f("\n    /// Promises binding to Shared Futures for Properties. pp --> fp")
+        for p in i.properties:
+            self.emit_cpp_f("    fp_{p.name} = pp_{p.name}.get_future();".format(**locals()))
+        self.emit_cpp_f(    "    fp_wakeUp = pp_wakeUp.get_future();")
+        
+        ## The rest...
         self.emit_cpp_f(dedent('''
         }}
 
