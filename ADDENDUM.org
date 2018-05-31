@@ -1,0 +1,25 @@
+* Addendum to the README
+** Promises and Futures
+*** Approach
+    We wrap stubs with promises, and in particular the methods
+    and properties. For each group (methods, properties), we
+    nominate a signaling object to signify that a method call was made
+    across DBus or that a property was set. The signaling object is itself
+    a promise, so you can block on its future, and then look for the specific
+    method or property that was activated, in a synchronous manner.
+
+    We generate both the promise and future objects, so all you need to do is
+    access the futures via the access methods generated.
+
+**** Property_Set
+     Whenever a property is set, it can be set by an external agent (through dBus) or
+     locally by the application. Regardless, an emitSignal() event is transacted.
+
+     The pp_wakeUp promise will be triggered regardless. However, we may need to 
+     convey through that whether the property was set locally or externally, so that
+     the application does not wind up processing its own signals, leading to a possible
+     infinite loop.
+
+     Indeed, if it were set locally, one can argue the pp_wakeUp should not be set
+     at all.
+

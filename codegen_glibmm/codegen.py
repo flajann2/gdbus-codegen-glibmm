@@ -971,6 +971,11 @@ class CodeGenerator:
              */'''))
             self.emit_h_f("    std::promise<void> pm_wakeUp;")
             self.emit_h_f("    std::shared_future<void> fm_wakeUp;")
+            self.emit_h_f(dedent('''
+            /** This is a general wakeup trigger for when
+             *  a method has been called.
+             */'''))
+            self.emit_h_f("    virtual void method_wakeUp();")
                 
             # Generate getters and setters for all properties, and the promises and futures as well
             for p in i.properties:
@@ -978,12 +983,13 @@ class CodeGenerator:
                 self.emit_h_f("std::promise<{p.cpptype_out}> pp_{p.name};".format(**locals()))
                 self.emit_h_f("std::shared_future<{p.cpptype_out}> fp_{p.name};".format(**locals()))
                 self.emit_h_f(dedent('''
-                    /** Handle the setting of a property
+                    /** {p.name}_setHandler({p.cpptype_in} value) -- Handle the setting of a property
                      *  This method will be called as a result of a call to <PropName>_set
-                     *  and should implement the actual setting of the property value.
-                     *  Should return true on sucess and false otherwise.
-                     */'''))
-                self.emit_h_f("virtual bool {p.name}_setHandler({p.cpptype_in} value) = 0;".format(**locals()))
+                     *  and will result in the actual property being set and triggered.
+                     *  As a virtual function can also be overriden to provide special behavior,
+                     *  if desiered.
+                     */'''.format(**locals())))
+                self.emit_h_f("virtual bool {p.name}_setHandler({p.cpptype_in} value);".format(**locals()))
                 
             # wake-up promise for properties
             self.emit_h_f(dedent('''
@@ -995,6 +1001,11 @@ class CodeGenerator:
              */'''))
             self.emit_h_f("    std::promise<void> pp_wakeUp;")
             self.emit_h_f("    std::shared_future<void> fp_wakeUp;")
+            self.emit_h_f(dedent('''
+            /** This is a general wakeup trigger for when
+             *  a property has been set.
+             */'''))
+            self.emit_h_f("    virtual void property_wakeUp();")
 
             # Generate all signals
             for s in i.signals:
@@ -1149,7 +1160,7 @@ class CodeGenerator:
 
     def define_types_method_handlers_promise(self, i):
         """ Generate code for handling and dispatching method calls in the
-        stub. This code will trigger the correct user-defined function with
+        promise. This code will trigger the correct user-defined function with
         parameter types converted to std:: c++ types.
         @param Interface i is the interface to generate method handlers for
         """
@@ -1165,6 +1176,7 @@ class CodeGenerator:
         ''').format(**locals()))
         for m in i.methods:
             #TODO: Make more thorough checks here. Method name is not enough.
+            #TODO: The string of if statements should really be if else or case statments 
             self.emit_cpp_f("    if (method_name.compare(\"%s\") == 0) {" % m.name)
             for ai in range(len(m.in_args)):
                 a = m.in_args[ai]
@@ -1191,6 +1203,7 @@ class CodeGenerator:
                 self.emit_cpp_f("            %s(p_%s)," % (cpptype_cast, a.name))
             self.emit_cpp_f("            {i.cpp_class_name}MessageHelper(invocation));".format(**locals()))
             self.emit_cpp_f("    }")
+        self.emit_cpp_f("    method_wakeUp();")
         self.emit_cpp_f("    }")
 
     def define_types_property_get_handlers_promise(self, i):
@@ -1252,6 +1265,7 @@ class CodeGenerator:
             ''').format(**locals()))
 
         self.emit_cpp_f(dedent('''
+            property_wakeUp();
             return true;
         }}
         ''').format(**locals()))
@@ -1326,6 +1340,15 @@ class CodeGenerator:
                 }}
 
                 return false;
+            }}''').format(**locals()))
+            
+    def define_types_property_handle_promise(self, i):
+        for p in i.properties:
+            self.emit_cpp_f(dedent('''
+            bool {i.cpp_namespace_name}::{p.name}_setHandler({p.cpptype_in} value) {{
+                pp_{p.name}.set_value(value);
+                property_wakeUp();
+                return true;
             }}''').format(**locals()))
 
     def define_types_emit_promise(self, i):
@@ -1476,6 +1499,7 @@ class CodeGenerator:
                 self.define_types_signal_emitters_promise(i)
                 self.define_types_dbus_callbacks_promise(i)
                 self.define_types_property_setters_promise(i)
+                self.define_types_property_handle_promise(i)
                 self.define_types_emit_promise(i)        
         else: # Stubs
             self.generate_stub_introspection()
