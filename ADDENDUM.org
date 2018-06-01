@@ -23,3 +23,18 @@
      Indeed, if it were set locally, one can argue the pp_wakeUp should not be set
      at all.
 
+     Also note that properties are also being gotten as well as set. And so the
+     getters will hit the futures! Ah, symmetry. In the case of the getters, does there need to be
+     a seperate trigger? I would think not -- however, we may need to expose this 
+     trigger across dbus.
+
+     For now, we will NOT expose the wakeup across dBus. We may later, should the need requires 
+     it.
+
+***** Signatures
+      pm_  -- promise for method
+      fm_  -- future  for method
+      pp_  -- promise for property
+      fp_  -- future  for property
+
+     

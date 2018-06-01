@@ -979,7 +979,7 @@ class CodeGenerator:
                 
             # Generate getters and setters for all properties, and the promises and futures as well
             for p in i.properties:
-                self.emit_h_f("\nvirtual {p.cpptype_out} {p.name}_get() = 0;".format(**locals()))
+                self.emit_h_f("\nvirtual {p.cpptype_out} {p.name}_get();".format(**locals()))
                 self.emit_h_f("std::promise<{p.cpptype_out}> pp_{p.name};".format(**locals()))
                 self.emit_h_f("std::shared_future<{p.cpptype_out}> fp_{p.name};".format(**locals()))
                 self.emit_h_f(dedent('''
@@ -1351,6 +1351,13 @@ class CodeGenerator:
                 return true;
             }}''').format(**locals()))
 
+    def define_types_property_getter_promise(self, i):
+        for p in i.properties:
+            self.emit_cpp_f(dedent('''
+            {p.cpptype_in} {i.cpp_namespace_name}::{p.name}_get() {{
+                return fp_{p.name}.get();
+            }}''').format(**locals()))
+
     def define_types_emit_promise(self, i):
             self.emit_cpp_f(dedent('''
             bool {i.cpp_namespace_name}::emitSignal(const std::string& propName, Glib::VariantBase& value) {{
@@ -1500,6 +1507,7 @@ class CodeGenerator:
                 self.define_types_dbus_callbacks_promise(i)
                 self.define_types_property_setters_promise(i)
                 self.define_types_property_handle_promise(i)
+                self.define_types_property_getter_promise(i)
                 self.define_types_emit_promise(i)        
         else: # Stubs
             self.generate_stub_introspection()
