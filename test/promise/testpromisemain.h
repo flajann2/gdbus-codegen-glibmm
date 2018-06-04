@@ -6,11 +6,11 @@ public:
 
   void FuTestVariant(Glib::VariantBase Param1, FuTestMessageHelper invocation);
   void FuTestByteStringArray(std::vector<std::string> Param1,
-                           FuTestMessageHelper invocation);
+                             FuTestMessageHelper invocation);
   void FuTestObjectPathArray(std::vector<std::string> Param1,
-                           FuTestMessageHelper invocation);
+                             FuTestMessageHelper invocation);
   void FuTestStringArray(std::vector<std::string> Param1,
-                       FuTestMessageHelper invocation);
+                         FuTestMessageHelper invocation);
   void FuTestByteString(std::string Param1, FuTestMessageHelper invocation);
   void FuTestSignature(std::string Param1, FuTestMessageHelper invocation);
   void FuTestObjectPath(std::string Param1, FuTestMessageHelper invocation);
@@ -25,15 +25,15 @@ public:
   void FuTestChar(guchar Param1, FuTestMessageHelper invocation);
   void FuTestBoolean(bool Param1, FuTestMessageHelper invocation);
   void FuTestAll(std::vector<std::string> in_Param1,
-               std::vector<std::string> in_Param2,
-               std::vector<std::string> in_Param3, std::string in_Param4,
-               std::string in_Param5, std::string in_Param6,
-               std::string in_Param7, double in_Param8, guint64 in_Param9,
-               gint64 in_Param10, guint32 in_Param11, gint32 in_Param12,
-               guint16 in_Param13, gint16 in_Param14, guchar in_Param15,
-               bool in_Param16, FuTestMessageHelper invocation);
+                 std::vector<std::string> in_Param2,
+                 std::vector<std::string> in_Param3, std::string in_Param4,
+                 std::string in_Param5, std::string in_Param6,
+                 std::string in_Param7, double in_Param8, guint64 in_Param9,
+                 gint64 in_Param10, guint32 in_Param11, gint32 in_Param12,
+                 guint16 in_Param13, gint16 in_Param14, guchar in_Param15,
+                 bool in_Param16, FuTestMessageHelper invocation);
   void FuTestTriggerInternalPropertyChange(gint32 newValue,
-                                         FuTestMessageHelper invocation);
+                                           FuTestMessageHelper invocation);
 
   std::vector<std::string> FuTestPropReadByteStringArray_get();
   std::vector<std::string> FuTestPropReadObjectPathArray_get();
@@ -86,8 +86,10 @@ public:
   gint32 FuTestPropInternalReadPropertyChange_get();
   gint32 FuTestPropInternalReadWritePropertyChange_get();
 
-  bool FuTestPropWriteByteStringArray_setHandler(std::vector<std::string> value);
-  bool FuTestPropWriteObjectPathArray_setHandler(std::vector<std::string> value);
+  bool
+  FuTestPropWriteByteStringArray_setHandler(std::vector<std::string> value);
+  bool
+  FuTestPropWriteObjectPathArray_setHandler(std::vector<std::string> value);
   bool FuTestPropWriteStringArray_setHandler(std::vector<std::string> value);
   bool FuTestPropWriteByteString_setHandler(std::string value);
   bool FuTestPropWriteSignature_setHandler(std::string value);
@@ -106,7 +108,8 @@ public:
   FuTestPropReadWriteByteStringArray_setHandler(std::vector<std::string> value);
   bool
   FuTestPropReadWriteObjectPathArray_setHandler(std::vector<std::string> value);
-  bool FuTestPropReadWriteStringArray_setHandler(std::vector<std::string> value);
+  bool
+  FuTestPropReadWriteStringArray_setHandler(std::vector<std::string> value);
   bool FuTestPropReadWriteByteString_setHandler(std::string value);
   bool FuTestPropReadWriteSignature_setHandler(std::string value);
   bool FuTestPropReadWriteObjectPath_setHandler(std::string value);
@@ -120,14 +123,16 @@ public:
   bool FuTestPropReadWriteInt16_setHandler(gint16 value);
   bool FuTestPropReadWriteChar_setHandler(guchar value);
   bool FuTestPropReadWriteBoolean_setHandler(bool value);
-  bool FuTestPropReadByteStringArray_setHandler(std::vector<std::string> value) {
+  bool
+  FuTestPropReadByteStringArray_setHandler(std::vector<std::string> value) {
     return true;
   }
   bool FuTestPropReadObjectPath_setHandler(std::string value) { return true; }
   bool FuTestPropReadByteString_setHandler(std::string) { return true; }
   bool FuTestPropReadSignature_setHandler(std::string) { return true; }
   bool FuTestPropReadString_setHandler(std::string) { return true; }
-  bool FuTestPropReadObjectPathArray_setHandler(std::vector<std::string> value) {
+  bool
+  FuTestPropReadObjectPathArray_setHandler(std::vector<std::string> value) {
     return true;
   }
   bool FuTestPropReadStringArray_setHandler(std::vector<std::string> value) {
