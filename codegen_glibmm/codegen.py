@@ -1206,6 +1206,17 @@ class CodeGenerator:
         self.emit_cpp_f("    method_wakeUp();")
         self.emit_cpp_f("    }")
 
+    def define_wakups_promise(self, i):
+        self.emit_cpp_f(dedent('''
+        void {i.cpp_namespace_name}::method_wakeUp() {{
+          pm_wakeUp.set_value();
+        }}
+
+        void {i.cpp_namespace_name}::property_wakeUp() {{
+          pp_wakeUp.set_value();
+        }}
+        ''').format(**locals()))
+        
     def define_types_property_get_handlers_promise(self, i):
         object_path = "/" + i.name.replace(".", "/")
 
@@ -1508,7 +1519,8 @@ class CodeGenerator:
                 self.define_types_property_setters_promise(i)
                 self.define_types_property_handle_promise(i)
                 self.define_types_property_getter_promise(i)
-                self.define_types_emit_promise(i)        
+                self.define_types_emit_promise(i)
+                self.define_wakups_promise(i)
         else: # Stubs
             self.generate_stub_introspection()
             self.generate_stub_intro()

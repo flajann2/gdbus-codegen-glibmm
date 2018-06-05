@@ -47,7 +47,7 @@ function gdbus_proxy() {
 
 function test_promise() {
     echo "===*** TESTING PROMISE INTERFACE ***==="
-    gdbus_stub
+    gdbus_promise
     gdbus_proxy
     sleep 1
     kill $TEST_PID
