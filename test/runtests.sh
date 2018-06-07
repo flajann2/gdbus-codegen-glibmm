@@ -8,13 +8,18 @@
 
 DIR=$(cd $(dirname "$0"); pwd)
 
+function build_it() {
+    rm -rf build
+    mkdir -p build
+    cd build
+    cmake .. -DCODEGEN="$DIR/../gdbus-codegen-glibmm.py" -DCMAKE_BUILD_TYPE=Debug
+    make
+}
+
 function gdbus_stub() {
     echo "=== STUB ==="
     pushd stub
-    mkdir -p build
-    cd build
-    cd .. ; rm -rf build ; mkdir build; cd build; cmake .. -DCODEGEN="$DIR/../gdbus-codegen-glibmm.py" -DCMAKE_BUILD_TYPE=Debug
-    make
+    build_it
     ./stubtest &
     TEST_PID=$!
     popd
@@ -23,10 +28,7 @@ function gdbus_stub() {
 function gdbus_promise() {
     echo "=== PROMISE ==="
     pushd promise
-    mkdir -p build
-    cd build
-    cd .. ; rm -rf build ; mkdir build; cd build; cmake .. -DCODEGEN="$DIR/../gdbus-codegen-glibmm.py" -DCMAKE_BUILD_TYPE=Debug
-    make
+    build_it
     ./promisetest &
     TEST_PID=$!
     popd
@@ -35,11 +37,7 @@ function gdbus_promise() {
 function gdbus_proxy() {
     echo "=== PROXY ==="
     pushd proxy
-    mkdir -p build
-    cd build
-    cd .. ; rm -rf build ; mkdir build; cd build; cmake .. -DCODEGEN="$DIR/../gdbus-codegen-glibmm.py" -DCMAKE_BUILD_TYPE=Debug
-
-    make
+    build_it
     ./proxytest&
     PROXY_PID=$!
     popd
