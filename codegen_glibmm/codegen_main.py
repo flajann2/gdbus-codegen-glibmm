@@ -89,8 +89,9 @@ def codegen_main():
     if_promises = opts.promise
 
     if cpp_code:
-        proxy_h   = open(cpp_code + "_proxy" + '.h', 'w')
-        proxy_cpp = open(cpp_code + "_proxy" + '.cpp', 'w')
+        proxy_h    = open(cpp_code + "_proxy" + '.h', 'w')
+        proxy_cpp  = open(cpp_code + "_proxy" + '.cpp', 'w')
+        metadata_h = open(cpp_code + "_metadata" + '.h', 'w')
         if if_promises:
             stub_h   = None
             stub_cpp = None
@@ -111,7 +112,8 @@ def codegen_main():
                                     proxy_h, proxy_cpp,
                                     stub_cpp, stub_h,
                                     if_promises, promise_cpp, promise_h,
-                                    common_cpp, common_h);
+                                    common_cpp, common_h,
+                                    metadata_h)
         ret = gen.generate()
         proxy_h.close()
         proxy_cpp.close()

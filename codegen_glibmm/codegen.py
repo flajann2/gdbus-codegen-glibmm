@@ -42,7 +42,8 @@ class CodeGenerator:
                  proxy_h, proxy_cpp,
                  stub_cpp, stub_h,
                  if_promises, promise_cpp, promise_h,
-                 common_cpp, common_h):
+                 common_cpp, common_h,
+                 metadata_h):
         self.ifaces = ifaces
 
         self.proxy_h = proxy_h
@@ -59,6 +60,7 @@ class CodeGenerator:
         self.common_cpp = common_cpp
 
         self.node_xmls = node_xmls
+        self.metadata_h = metadata_h
         pass
 
     def emit (self, dest, text, newline = True):
@@ -83,6 +85,13 @@ class CodeGenerator:
                            generated code
         """
         self.emit(self.proxy_cpp, text, newline)
+
+    def emit_metadata (self, text, newline = True):
+        """ Emit code to *_metadata.h file file
+            @param newline boolean indicating whether to append a newline to
+                           generated code
+        """
+        self.emit(self.metadata_h, text, newline)
 
     def emit_h_s (self, text, newline = True):
         """ Emit code to stub header file
@@ -882,8 +891,7 @@ class CodeGenerator:
                 return true;
             }}''').format(**locals()))
 
-
-    ### Promises
+    ### Promises   
     def generate_promise_introspection(self):
         """ Generate introspection XML for all introspection XML files """
         for i in range(0, len(self.node_xmls)):
@@ -892,14 +900,16 @@ class CodeGenerator:
             # This will encode the XML introspection data as raw bytes. This is
             # to avoid any formatting issues when embedding the introspection
             # data in the stub file.
-            self.emit_cpp_f ("static const char interfaceXml%d[] = R\"XML_DELIMITER(" % i, False)
+            self.emit_metadata ("static const char interfaceXml%d[] = R\"XML_DELIMITER(" % i, False)
             for char in node_xml:
-                self.emit_cpp_f (char, False)
-            self.emit_cpp_f (")XML_DELIMITER\";")
+                self.emit_metadata (char, False)
+            self.emit_metadata (")XML_DELIMITER\";")
+            pass
 
     def generate_promise_intro(self):
         """ Generate introduction for promise cpp file """
         self.emit_cpp_f ('#include "%s"' % self.promise_h.name)
+        self.emit_cpp_f ('#include "%s"' % self.metadata_h.name)
 
     def declare_types_promise(self):
         """ Generate types and classes for the promise. This will generate the
@@ -1370,31 +1380,39 @@ class CodeGenerator:
             }}''').format(**locals()))
 
     def define_types_emit_promise(self, i):
-            self.emit_cpp_f(dedent('''
+             self.emit_cpp_f(dedent('''
+            /// Here we check to see if connection is established or not, to
+            /// updating of promises before the connection is established.
             bool {i.cpp_namespace_name}::emitSignal(const std::string& propName, Glib::VariantBase& value) {{
-                std::map<Glib::ustring, Glib::VariantBase> changedProps;
-                std::vector<Glib::ustring> changedPropsNoValue;
-
-                changedProps[propName] = value;
-
-                Glib::Variant<std::map<Glib::ustring,  Glib::VariantBase> > changedPropsVar = Glib::Variant<std::map <Glib::ustring, Glib::VariantBase> >::create (changedProps);
-                Glib::Variant<std::vector<Glib::ustring> > changedPropsNoValueVar = Glib::Variant<std::vector<Glib::ustring> >::create(changedPropsNoValue);
-                std::vector<Glib::VariantBase> ps;
-                ps.push_back(Glib::Variant<Glib::ustring>::create(m_interfaceName));
-                ps.push_back(changedPropsVar);
-                ps.push_back(changedPropsNoValueVar);
-                Glib::VariantContainerBase propertiesChangedVariant = Glib::Variant<std::vector<Glib::VariantBase> >::create_tuple(ps);
-
-                m_connection->emit_signal(
-                    m_objectPath,
-                    "org.freedesktop.DBus.Properties",
-                    "PropertiesChanged",
-                    Glib::ustring(),
-                    propertiesChangedVariant);
-
-                return true;
+                bool ret;
+                if (m_connection) {{
+                    std::map<Glib::ustring, Glib::VariantBase> changedProps;
+                    std::vector<Glib::ustring> changedPropsNoValue;
+    
+                    changedProps[propName] = value;
+    
+                    Glib::Variant<std::map<Glib::ustring,  Glib::VariantBase> > changedPropsVar = Glib::Variant<std::map <Glib::ustring, Glib::VariantBase> >::create (changedProps);
+                    Glib::Variant<std::vector<Glib::ustring> > changedPropsNoValueVar = Glib::Variant<std::vector<Glib::ustring> >::create(changedPropsNoValue);
+                    std::vector<Glib::VariantBase> ps;
+                    ps.push_back(Glib::Variant<Glib::ustring>::create(m_interfaceName));
+                    ps.push_back(changedPropsVar);
+                    ps.push_back(changedPropsNoValueVar);
+                    Glib::VariantContainerBase propertiesChangedVariant = Glib::Variant<std::vector<Glib::VariantBase> >::create_tuple(ps);
+    
+                    m_connection->emit_signal(
+                        m_objectPath,
+                        "org.freedesktop.DBus.Properties",
+                        "PropertiesChanged",
+                        Glib::ustring(),
+                        propertiesChangedVariant);
+    
+                    ret = true;
+                }} else {{
+                    ret = false;
+                }}
+                return ret;
             }}''').format(**locals()))
- 
+
     ### Common
     def generate_common_intro(self):
         self.emit_h_common(dedent("""
