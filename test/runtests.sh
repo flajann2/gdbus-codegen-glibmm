@@ -43,6 +43,11 @@ function gdbus_proxy() {
     popd
 }
 
+function test_luxpromise() {
+    echo "===*** TESTING LuxPromise CLASS ***==="
+    pushd luxpromise
+}
+
 function test_promise() {
     echo "===*** TESTING PROMISE INTERFACE ***==="
     gdbus_promise
@@ -61,6 +66,7 @@ function test_stub() {
     kill $PROXY_PID    
 }
 
+test_luxpromise
 test_promise
 echo
 echo "!!! Please ignore the 'Terminated' messages, as is normal for bash to print when a process is killed."

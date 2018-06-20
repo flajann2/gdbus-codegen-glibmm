@@ -12,7 +12,6 @@ IF (NOT CODEGEN)
     MESSAGE (FATAL_ERROR "CODEGEN not specified. Specify path to codegen using -DCODEGEN=<path to code>")
 ENDIF ()
 
-
 # Generate code for the "many-types" service
 SET (INTROSPECTION_XML_PROXY ${CMAKE_SOURCE_DIR}/../common/many-types.xml)
 
@@ -29,7 +28,6 @@ ADD_CUSTOM_COMMAND (OUTPUT ${GENERATED_PROXY}
                                         ${INTROSPECTION_XML_PROXY}
                     DEPENDS ${INTROSPECTION_XML_PROXY}
                     COMMENT "Generate the proxy for the test program")
-
 
 # Generate code for the "another-service" service
 SET (INTROSPECTION_XML_PROXY_TEST_TWO ${CMAKE_SOURCE_DIR}/../common/another-service.xml)
