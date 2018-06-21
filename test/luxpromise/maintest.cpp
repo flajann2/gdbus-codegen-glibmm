@@ -1,4 +1,11 @@
-#include "luxpromise.h"
+#include <iostream>
+#include <luxpromise.h>
+#include <gtest/gtest.h>
+#include <cstdlib>
+#include "gmock/gmock.h"
+
+
+constexpr int countdown = 1400;
 
 int main() {
   LuxPromise<int> data(countdown);
@@ -14,7 +21,7 @@ int main() {
     });
   
   while (data() > 1) {
-    cout << "cv got " << data() << endl;  
+    std::cout << "cv got " << data() << std::endl;  
   }
   
   t1.join();

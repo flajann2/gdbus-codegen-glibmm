@@ -2,6 +2,15 @@ CMAKE_MINIMUM_REQUIRED (VERSION 2.8)
 PROJECT (LuxPromiseTest)
 FIND_PACKAGE(PkgConfig)
 
+macro(print_all_variables)
+  message(STATUS "print_all_variables------------------------------------------{")
+  get_cmake_property(_variableNames VARIABLES)
+  foreach (_variableName ${_variableNames})
+    message(STATUS "${_variableName}=${${_variableName}}")
+  endforeach()
+  message(STATUS "print_all_variables------------------------------------------}")
+endmacro()
+
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_CURRENT_SOURCE_DIR}/../cmake_modules)
 
 include(AddGTestTest)
@@ -12,11 +21,19 @@ add_gmock()
 set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-set (TARGET luxpromisetest)
+set (TARGET test_luxpromise)
 
-include_directories (${CMAKE_PROJECT_DIR}/include)
+include_directories (${CMAKE_SOURCE_DIR}/../../include)
 
-add_executable (${TARGET} maintest.cpp)
+file(GLOB SOURCE_FILES "*.cpp" "*.h")
+file(GLOB HEADER_FILES "../../include/*.h")
+
+set(SOURCES
+  ${SOURCE_FILES}
+  ${HEADER_FILES}
+  )
+
+add_executable (${TARGET} ${SOURCES})
 
 target_link_libraries(${TARGET}
   gtest
