@@ -69,13 +69,13 @@ function test_stub() {
 }
 
 test_luxpromise
-#test_promise
-#echo
-#echo "!!! Please ignore the 'Terminated' messages, as is normal for bash to print when a process is killed."
-#sleep 2
-#echo
-#echo
-#test_stub
-#echo
-#echo "Tests have now concluded."
-#echo "!!! Please ignore the 'Terminated' messages, as is normal for bash to print when a process is killed."
+test_promise
+echo
+echo "!!! Please ignore the 'Terminated' messages, as is normal for bash to print when a process is killed."
+sleep 2
+echo
+echo
+test_stub
+echo
+echo "Tests have now concluded."
+echo "!!! Please ignore the 'Terminated' messages, as is normal for bash to print when a process is killed."

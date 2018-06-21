@@ -21,6 +21,10 @@ add_gmock()
 set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
+IF (NOT CODEGEN)
+  MESSAGE (FATAL_ERROR "CODEGEN not specified. Specify path to codegen using -DCODEGEN=<path to code>")
+ENDIF ()
+
 set (TARGET test_luxpromise)
 
 include_directories (${CMAKE_SOURCE_DIR}/../../include)

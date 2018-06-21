@@ -1,28 +1,44 @@
+#include "gmock/gmock.h"
+#include <cstdlib>
+#include <gtest/gtest.h>
 #include <iostream>
 #include <luxpromise.h>
-#include <gtest/gtest.h>
-#include <cstdlib>
-#include "gmock/gmock.h"
 
+constexpr int countdown = 28000;
 
-constexpr int countdown = 1400;
+namespace lux {
+class PromiseTests : public ::testing::Test {
+protected:
+  Promise<int> data{countdown};
 
-int main() {
-  LuxPromise<int> data(countdown);
- 
-  std::cout << "erste: setup " << std::endl;
+  void SetUp() override {}
+
+  virtual void TearDown() {}
+};
+}
+
+using namespace lux;
+
+TEST_F(PromiseTests, test_basic_functionality) {
 
   std::thread t1([&]() {
-      for (auto i = countdown; i > 0; --i) {
-        std::this_thread::sleep_for(std::chrono::milliseconds(1));
-      data = i;      
-      }
-      data.end_updates();
-    });
-  
-  while (data() > 1) {
-    std::cout << "cv got " << data() << std::endl;  
+    for (auto i = countdown; i > 0; --i) {
+      std::this_thread::sleep_for(std::chrono::microseconds(1));
+      data = i;
+    }
+    data.end_updates();
+  });
+
+  int data_snapshot;
+  int last_data_snapshot = data() + 1;
+
+  while ((data_snapshot = data()) > 1) {
+    if (data.is_active()) {
+      ASSERT_TRUE(data_snapshot <= last_data_snapshot);
+    }
+    last_data_snapshot = data_snapshot;
+    data.wait_for_update();
   }
-  
+
   t1.join();
 }
