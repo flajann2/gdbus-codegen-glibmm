@@ -14,7 +14,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 set (TARGET luxpromisetest)
 
-include_directories (${CMAKE_BINARY_DIR}/include)
+include_directories (${CMAKE_PROJECT_DIR}/include)
 
 add_executable (${TARGET} maintest.cpp)
 
