@@ -23,6 +23,7 @@ SET (INTROSPECTION_XML ${CMAKE_SOURCE_DIR}/../common/futures.xml)
 
 ADD_CUSTOM_COMMAND (OUTPUT ${GENERATED_PROMISE}
                     COMMAND mkdir -p ${CMAKE_BINARY_DIR}/generated/
+                    COMMAND cp ${CMAKE_SOURCE_DIR}/../../include/*.h ${CMAKE_BINARY_DIR}/generated/
                     COMMAND ${CODEGEN} --promise=true
                                        --generate-cpp-code=${CMAKE_BINARY_DIR}/generated/futures
                                        ${INTROSPECTION_XML}
