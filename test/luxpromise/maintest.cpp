@@ -4,7 +4,7 @@
 #include <iostream>
 #include <luxpromise.h>
 
-constexpr int countdown = 28000;
+constexpr int countdown = 16384;
 
 namespace lux {
   class PromiseTests : public ::testing::Test {
@@ -21,9 +21,9 @@ namespace lux {
 }
 
 using namespace lux;
+using namespace std;
 
 TEST_F(PromiseTests, test_property_mode) {
-
   std::thread t1([&]() {
     for (auto i = countdown; i > 0; --i) {
       std::this_thread::sleep_for(std::chrono::microseconds(1));
@@ -47,20 +47,21 @@ TEST_F(PromiseTests, test_property_mode) {
 }
 
 TEST_F(PromiseTests, test_method_mode) {
-
   std::thread t1([&]() {
     for (auto i = countdown; i > 0; --i) {
       std::this_thread::sleep_for(std::chrono::microseconds(1));
       method = i;
+      //cout << "meth <: set to " << i << endl;
     }
     method.end_updates();
   });
 
   int meth_snapshot;
-  int last_meth_snapshot = data() + 1;
+  int last_meth_snapshot = method() + 1;
 
   while ((meth_snapshot = method()) > 1) {
     if (method.is_active()) {
+      //cout << "meth >: got " << meth_snapshot << endl;
       ASSERT_TRUE(meth_snapshot < last_meth_snapshot);
     }
     last_meth_snapshot = meth_snapshot;

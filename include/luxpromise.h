@@ -28,14 +28,20 @@ namespace lux {
     bool fresh_ = false;
     bool active_ = true;
 
-    template <typename LOCK> void wakeUp(LOCK &lk) {
+    template <typename LOCK> void wake_up(LOCK &lk) {
       fresh_ = true;
+      lk.unlock();
+      cv_.notify_all();
+    }
+    
+    template <typename LOCK> void wake_down(LOCK &lk) {
+      fresh_ = false;
       lk.unlock();
       cv_.notify_all();
     }
 
     template <typename LOCK>
-    inline void raw_wait(LOCK &lk, bool wait_for = true) {
+    inline void raw_wait_up(LOCK &lk, bool wait_for = true) {
       switch (LType) {
       case Types::method:
       case Types::event:
@@ -45,29 +51,36 @@ namespace lux {
       cv_.wait(lk, [&] { return !active_ || (fresh_ || !wait_for); });
     }
 
+    template <typename LOCK>
+    inline void raw_wait_down(LOCK &lk) {
+      cv_.wait(lk, [&] { return !active_ || !fresh_; });
+    }
+
   public:
     Promise(Data data) : data_(data) {}
 
     Promise &operator=(Data &&update_data) {
       unique_l lk(mutex_);
       data_ = std::move(update_data);
-      wakeUp(lk);
+      wake_up(lk);
       return *this;
     }
 
     Promise &operator=(Data &update_data) {
       unique_l lk(mutex_);
       data_ = update_data;
-      wakeUp(lk);
+      wake_up(lk);
       return *this;
     }
 
     /// Will block if active not fresh
+    template <typename LOCK>
     const Data &operator()(bool wait_for = true) {
-      unique_l lk(mutex_);
-      raw_wait(lk, wait_for);
-      fresh_ = false;
-      return data_;
+      LOCK lk(mutex_);
+      raw_wait_up(lk, wait_for);
+      auto data = data_;
+      wait_down(lk);
+      return data;
     }
 
     inline void end_updates() { active_ = false; }
@@ -76,7 +89,14 @@ namespace lux {
     /// Will wait while staying fresh.
     inline Promise<Data, LType> &wait_for_update() {
       unique_l lk(mutex_);
-      raw_wait(lk);
+      raw_wait_up(lk);
+      return *this;
+    }
+    
+    /// Will wait while not staying fresh.
+    inline Promise<Data, LType> &wait_for_downdate() {
+      unique_l lk(mutex_);
+      raw_wait_down(lk);
       return *this;
     }
   };
