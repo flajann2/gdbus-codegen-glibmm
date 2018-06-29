@@ -8,9 +8,11 @@
 namespace lux {
   /**
    * property     -- property-type promise, optional blocking
-   * method       -- method-type promise, always block, parameters passed in aggeration
+   * method       -- method-type promise, always block, parameters passed in
+   * aggeration
    * event        -- event-type promise, always blocks
-   * notification -- master notifier that one of the above has changed or triggered
+   * notification -- master notifier that one of the above has changed or
+   * triggered
    */
   enum class Types { property, method, event, notification };
 
@@ -21,27 +23,25 @@ namespace lux {
   /**
    */
   template <typename Data, Types LType = Types::property> class Promise {
-
     Data data_;
     mutex_l mutex_;
     condvar cv_;
     bool fresh_ = false;
     bool active_ = true;
 
-    template <typename LOCK> void wake_up(LOCK &lk) {
-      fresh_ = true;
-      lk.unlock();
-      cv_.notify_all();
-    }
-    
-    template <typename LOCK> void wake_down(LOCK &lk) {
+    void wake_down(unique_l &lk) {
       fresh_ = false;
       lk.unlock();
       cv_.notify_all();
     }
 
-    template <typename LOCK>
-    inline void raw_wait_up(LOCK &lk, bool wait_for = true) {
+    void wake_up(unique_l &lk) {
+      fresh_ = true;
+      lk.unlock();
+      cv_.notify_all();
+    }
+
+    inline void raw_wait_up(unique_l &lk, bool wait_for = true) {
       switch (LType) {
       case Types::method:
       case Types::event:
@@ -51,8 +51,7 @@ namespace lux {
       cv_.wait(lk, [&] { return !active_ || (fresh_ || !wait_for); });
     }
 
-    template <typename LOCK>
-    inline void raw_wait_down(LOCK &lk) {
+    inline void raw_wait_down(unique_l &lk) {
       cv_.wait(lk, [&] { return !active_ || !fresh_; });
     }
 
@@ -74,9 +73,8 @@ namespace lux {
     }
 
     /// Will block if active not fresh
-    template <typename LOCK>
     const Data &operator()(bool wait_for = true) {
-      LOCK lk(mutex_);
+      unique_l lk(mutex_);
       raw_wait_up(lk, wait_for);
       auto data = data_;
       wait_down(lk);
@@ -92,7 +90,7 @@ namespace lux {
       raw_wait_up(lk);
       return *this;
     }
-    
+
     /// Will wait while not staying fresh.
     inline Promise<Data, LType> &wait_for_downdate() {
       unique_l lk(mutex_);
