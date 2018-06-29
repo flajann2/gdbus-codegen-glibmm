@@ -61,6 +61,7 @@ namespace lux {
 
     Promise &operator=(Data &&update_data) {
       unique_l lk(mutex_);
+      raw_wait_down(lk);
       data_ = std::move(update_data);
       wake_up(lk);
       return *this;
@@ -68,18 +69,21 @@ namespace lux {
 
     Promise &operator=(Data &update_data) {
       unique_l lk(mutex_);
+      raw_wait_down(lk);
       data_ = update_data;
       wake_up(lk);
       return *this;
     }
 
     /// Will block if active not fresh
-    const Data &operator()(bool wait_for = true) {
+    /// Returns a copy of the data snapshot, though
+    /// it is entirely possible the copy will be elided.
+    const Data operator()(bool wait_for = true) {
       unique_l lk(mutex_);
       raw_wait_up(lk, wait_for);
-      auto data = data_;
+      auto snapshot_data = data_;
       wake_down(lk);
-      return data;
+      return snapshot_data;
     }
 
     inline void end_updates() { active_ = false; }

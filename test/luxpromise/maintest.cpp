@@ -5,14 +5,15 @@
 #include <luxpromise.h>
 
 constexpr int countdown = 16384;
+constexpr int meltdown = 100000;
 
 namespace lux {
   class PromiseTests : public ::testing::Test {
   protected:
     Promise<int, Types::property> data{countdown};
-    Promise<int, Types::method> method{countdown};
-    Promise<int, Types::event> event{countdown};
-    Promise<int, Types::notification> notif{countdown};
+    Promise<int, Types::method> method{meltdown};
+    Promise<int, Types::event> event{meltdown};
+    Promise<int, Types::notification> notif{meltdown};
 
     void SetUp() override {}
 
@@ -46,26 +47,37 @@ TEST_F(PromiseTests, test_property_mode) {
   t1.join();
 }
 
-TEST_F(PromiseTests, test_method_mode) {
+
+template<typename PIT>
+void test_non_property(PIT& pit, int meltdown) {
   std::thread t1([&]() {
-    for (auto i = countdown; i > 0; --i) {
-      std::this_thread::sleep_for(std::chrono::microseconds(1));
-      method = i;
-      cout << "meth <: set to " << i << endl;
+      for (auto i = meltdown; i > 0; --i) {
+      pit = i;
     }
-    method.end_updates();
+    pit.end_updates();
   });
 
-  int meth_snapshot;
-  int last_meth_snapshot = method() + 1;
+  int snapshot;
+  int last_snapshot = pit();
 
-  while ((meth_snapshot = method()) > 1) {
-    if (method.is_active()) {
-      cout << "meth >: got " << meth_snapshot << endl;
-      ASSERT_TRUE(meth_snapshot < last_meth_snapshot);
+  while ((snapshot = pit()) > 1) {
+    if (pit.is_active()) {
+      ASSERT_TRUE(last_snapshot - snapshot == 1);
     }
-    last_meth_snapshot = meth_snapshot;
+    last_snapshot = snapshot;
   }
 
   t1.join();
+}
+
+TEST_F(PromiseTests, test_method_mode) {
+  test_non_property(method, meltdown);
+}
+
+TEST_F(PromiseTests, test_event_mode) {
+  test_non_property(event, meltdown);
+}
+
+TEST_F(PromiseTests, test_notification_mode) {
+  test_non_property(notif, meltdown);
 }
