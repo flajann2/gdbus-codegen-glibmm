@@ -51,7 +51,7 @@ TEST_F(PromiseTests, test_method_mode) {
     for (auto i = countdown; i > 0; --i) {
       std::this_thread::sleep_for(std::chrono::microseconds(1));
       method = i;
-      //cout << "meth <: set to " << i << endl;
+      cout << "meth <: set to " << i << endl;
     }
     method.end_updates();
   });
@@ -61,7 +61,7 @@ TEST_F(PromiseTests, test_method_mode) {
 
   while ((meth_snapshot = method()) > 1) {
     if (method.is_active()) {
-      //cout << "meth >: got " << meth_snapshot << endl;
+      cout << "meth >: got " << meth_snapshot << endl;
       ASSERT_TRUE(meth_snapshot < last_meth_snapshot);
     }
     last_meth_snapshot = meth_snapshot;

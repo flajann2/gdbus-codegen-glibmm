@@ -36,6 +36,7 @@ namespace lux {
     }
 
     void wake_up(unique_l &lk) {
+      
       fresh_ = true;
       lk.unlock();
       cv_.notify_all();
@@ -77,7 +78,7 @@ namespace lux {
       unique_l lk(mutex_);
       raw_wait_up(lk, wait_for);
       auto data = data_;
-      wait_down(lk);
+      wake_down(lk);
       return data;
     }
 
