@@ -921,7 +921,7 @@ class CodeGenerator:
         #include <string>
         #include <glibmm.h>
         #include <giomm.h>
-        #include <future>
+        #include <luxpromise.h>
         #include <tuple>
         #include "{self.common_h.name}"
         ''').format(**locals()))
@@ -967,9 +967,9 @@ class CodeGenerator:
                 mtuple += "{i.cpp_class_name}MessageHelper>".format(**locals())
                 
                 # promise
-                self.emit_h_f("std::promise<{mtuple}> pm_{m.name};".format(**locals()))
+                self.emit_h_f("lux::promise<{mtuple}, lux::ptype::method> pm_{m.name};".format(**locals()))
 
-                # shared future
+                # shared future TODO::needs logic rework
                 self.emit_h_f("std::shared_future<{mtuple}> fm_{m.name};".format(**locals()))
                
             # wake-up promise and future for methods
@@ -979,7 +979,7 @@ class CodeGenerator:
              *  This is just a signaling promise to allow you to handle
              *  an incoming call synchronously.
              */'''))
-            self.emit_h_f("    std::promise<void> pm_wakeUp;")
+            self.emit_h_f("    lux::promise<void, lux::ptype::notify> pm_wakeUp;")
             self.emit_h_f("    std::shared_future<void> fm_wakeUp;")
             self.emit_h_f(dedent('''
             /** This is a general wakeup trigger for when
@@ -990,7 +990,7 @@ class CodeGenerator:
             # Generate getters and setters for all properties, and the promises and futures as well
             for p in i.properties:
                 self.emit_h_f("\nvirtual {p.cpptype_out} {p.name}_get();".format(**locals()))
-                self.emit_h_f("std::promise<{p.cpptype_out}> pp_{p.name};".format(**locals()))
+                self.emit_h_f("lux::promise<{p.cpptype_out}, lux::ptype::property> pp_{p.name};".format(**locals()))
                 self.emit_h_f("std::shared_future<{p.cpptype_out}> fp_{p.name};".format(**locals()))
                 self.emit_h_f(dedent('''
                     /** {p.name}_setHandler({p.cpptype_in} value) -- Handle the setting of a property
@@ -1009,7 +1009,7 @@ class CodeGenerator:
              *  promise to allow you to handle property
              *  updates synchronously.
              */'''))
-            self.emit_h_f("    std::promise<void> pp_wakeUp;")
+            self.emit_h_f("    lux::promise<void, lux::ptype::notify> pp_wakeUp;")
             self.emit_h_f("    std::shared_future<void> fp_wakeUp;")
             self.emit_h_f(dedent('''
             /** This is a general wakeup trigger for when

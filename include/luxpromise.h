@@ -14,7 +14,7 @@ namespace lux {
    * notification -- master notifier that one of the above has changed or
    * triggered
    */
-  enum class Types { property, method, event, notification };
+  enum class ptype { property, method, event, notification };
 
   using mutex_l = std::mutex;
   using unique_l = std::unique_lock<mutex_l>;
@@ -22,7 +22,7 @@ namespace lux {
 
   /**
    */
-  template <typename Data, Types LType = Types::property> class Promise {
+  template <typename Data, ptype LType = ptype::property> class promise {
     Data data_;
     mutex_l mutex_;
     condvar cv_;
@@ -44,9 +44,9 @@ namespace lux {
 
     inline void raw_wait_up(unique_l &lk, bool wait_for = true) {
       switch (LType) {
-      case Types::method:
-      case Types::event:
-      case Types::notification:
+      case ptype::method:
+      case ptype::event:
+      case ptype::notification:
         wait_for = true; // force the wait regardless
       }
       cv_.wait(lk, [&] { return !active_ || (fresh_ || !wait_for); });
@@ -57,9 +57,9 @@ namespace lux {
     }
 
   public:
-    Promise(Data data) : data_(data) {}
+    promise(Data data) : data_(data) {}
 
-    Promise &operator=(Data &&update_data) {
+    promise &operator=(Data &&update_data) {
       unique_l lk(mutex_);
       raw_wait_down(lk);
       data_ = std::move(update_data);
@@ -67,7 +67,7 @@ namespace lux {
       return *this;
     }
 
-    Promise &operator=(Data &update_data) {
+    promise &operator=(Data &update_data) {
       unique_l lk(mutex_);
       raw_wait_down(lk);
       data_ = update_data;
@@ -90,14 +90,14 @@ namespace lux {
     inline bool is_active() { return active_; }
 
     /// Will wait while staying fresh.
-    inline Promise<Data, LType> &wait_for_update() {
+    inline promise<Data, LType> &wait_for_update() {
       unique_l lk(mutex_);
       raw_wait_up(lk);
       return *this;
     }
 
     /// Will wait while not staying fresh.
-    inline Promise<Data, LType> &wait_for_downdate() {
+    inline promise<Data, LType> &wait_for_downdate() {
       unique_l lk(mutex_);
       raw_wait_down(lk);
       return *this;

@@ -10,10 +10,10 @@ constexpr int meltdown = 100000;
 namespace lux {
   class PromiseTests : public ::testing::Test {
   protected:
-    Promise<int, Types::property> data{countdown};
-    Promise<int, Types::method> method{meltdown};
-    Promise<int, Types::event> event{meltdown};
-    Promise<int, Types::notification> notif{meltdown};
+    promise<int, ptype::property> data{countdown};
+    promise<int, ptype::method> method{meltdown};
+    promise<int, ptype::event> event{meltdown};
+    promise<int, ptype::notification> notif{meltdown};
 
     void SetUp() override {}
 
