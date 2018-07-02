@@ -1201,11 +1201,11 @@ class CodeGenerator:
     def define_wakups_promise(self, i):
         self.emit_cpp_f(dedent('''
         void {i.cpp_namespace_name}::method_wakeUp() {{
-          pm_wakeUp.set_value();
+          pm_wakeUp = true; // dummy assign to trigger the wakeup
         }}
 
         void {i.cpp_namespace_name}::property_wakeUp() {{
-          pp_wakeUp.set_value();
+          pp_wakeUp = true; // dummy assign to trigger the wakeup
         }}
         ''').format(**locals()))
         
