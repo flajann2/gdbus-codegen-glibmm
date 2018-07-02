@@ -969,18 +969,14 @@ class CodeGenerator:
                 # promise
                 self.emit_h_f("lux::promise<{mtuple}, lux::ptype::method> pm_{m.name};".format(**locals()))
 
-                # shared future TODO::needs logic rework
-                self.emit_h_f("std::shared_future<{mtuple}> fm_{m.name};".format(**locals()))
-               
-            # wake-up promise and future for methods
+            # wake-up promise for methods
             self.emit_h_f(dedent('''
-            /** This promise (and future) will receive a signal when
+            /** This promise will receive a signal when
              *  one of the methods were called. There is no data here.
              *  This is just a signaling promise to allow you to handle
              *  an incoming call synchronously.
              */'''))
-            self.emit_h_f("    lux::promise<void, lux::ptype::notify> pm_wakeUp;")
-            self.emit_h_f("    std::shared_future<void> fm_wakeUp;")
+            self.emit_h_f("    lux::promise<lux::notify_ob, lux::ptype::notification> pm_wakeUp;")
             self.emit_h_f(dedent('''
             /** This is a general wakeup trigger for when
              *  a method has been called.
@@ -991,7 +987,6 @@ class CodeGenerator:
             for p in i.properties:
                 self.emit_h_f("\nvirtual {p.cpptype_out} {p.name}_get();".format(**locals()))
                 self.emit_h_f("lux::promise<{p.cpptype_out}, lux::ptype::property> pp_{p.name};".format(**locals()))
-                self.emit_h_f("std::shared_future<{p.cpptype_out}> fp_{p.name};".format(**locals()))
                 self.emit_h_f(dedent('''
                     /** {p.name}_setHandler({p.cpptype_in} value) -- Handle the setting of a property
                      *  This method will be called as a result of a call to <PropName>_set
@@ -1001,7 +996,7 @@ class CodeGenerator:
                      */'''.format(**locals())))
                 self.emit_h_f("virtual bool {p.name}_setHandler({p.cpptype_in} value);".format(**locals()))
                 
-            # wake-up promise for properties
+            # wakeup promise for properties
             self.emit_h_f(dedent('''
             /** This promise will receive a signal when
              *  one of the properties were set through dbus.
@@ -1009,8 +1004,7 @@ class CodeGenerator:
              *  promise to allow you to handle property
              *  updates synchronously.
              */'''))
-            self.emit_h_f("    lux::promise<void, lux::ptype::notify> pp_wakeUp;")
-            self.emit_h_f("    std::shared_future<void> fp_wakeUp;")
+            self.emit_h_f("    lux::promise<lux::notify_ob, lux::ptype::notification> pp_wakeUp;")
             self.emit_h_f(dedent('''
             /** This is a general wakeup trigger for when
              *  a property has been set.
@@ -1101,18 +1095,6 @@ class CodeGenerator:
         # interfaceXml variable contains our XML, and use the correct one
         # instead. This code will break if there are several introspection XML
         # files specified.
-
-        # Set up promises and futures for methods
-        self.emit_cpp_f("\n    /// Promises binding to Shared Futures for member function wrappers. pm --> fm")
-        for m in i.methods:
-            self.emit_cpp_f("    fm_{m.name} = pm_{m.name}.get_future();".format(**locals()))
-        self.emit_cpp_f(    "    fm_wakeUp = pm_wakeUp.get_future();")
-        
-        # Set up promises and futures for properties
-        self.emit_cpp_f("\n    /// Promises binding to Shared Futures for Properties. pp --> fp")
-        for p in i.properties:
-            self.emit_cpp_f("    fp_{p.name} = pp_{p.name}.get_future();".format(**locals()))
-        self.emit_cpp_f(    "    fp_wakeUp = pp_wakeUp.get_future();")
         
         ## The rest...
         self.emit_cpp_f(dedent('''
@@ -1376,7 +1358,7 @@ class CodeGenerator:
         for p in i.properties:
             self.emit_cpp_f(dedent('''
             {p.cpptype_in} {i.cpp_namespace_name}::{p.name}_get() {{
-                return fp_{p.name}.get();
+                return pp_{p.name}();
             }}''').format(**locals()))
 
     def define_types_emit_promise(self, i):

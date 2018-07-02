@@ -14,11 +14,15 @@ namespace lux {
    * notification -- master notifier that one of the above has changed or
    * triggered
    */
-  enum class ptype { property, method, event, notification };
+  enum class ptype { property,
+                     method,
+                     event,
+                     notification };
 
   using mutex_l = std::mutex;
   using unique_l = std::unique_lock<mutex_l>;
   using condvar = std::condition_variable;
+  using notify_ob = struct nob {};
 
   /**
    */
