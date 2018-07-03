@@ -47,6 +47,7 @@ function test_luxpromise() {
     echo "===*** TESTING LuxPromise CLASS ***==="
     pushd luxpromise
     build_it
+    ./test_luxpromise
     popd
 }
 
@@ -69,12 +70,14 @@ function test_stub() {
 }
 
 test_luxpromise
+
 test_promise
 echo
 echo "!!! Please ignore the 'Terminated' messages, as is normal for bash to print when a process is killed."
 sleep 2
 echo
 echo
+
 test_stub
 echo
 echo "Tests have now concluded."

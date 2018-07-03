@@ -22,7 +22,7 @@ namespace lux {
   using mutex_l = std::mutex;
   using unique_l = std::unique_lock<mutex_l>;
   using condvar = std::condition_variable;
-  using notify_ob = struct nob {};
+  using notify_ob = bool;
 
   /**
    */
@@ -61,7 +61,9 @@ namespace lux {
     }
 
   public:
-    promise(Data data) : data_(data) {}
+    explicit promise() = default;
+    promise(const promise&) = delete;
+    explicit promise(Data data) : data_(data) {}
 
     promise &operator=(Data &&update_data) {
       unique_l lk(mutex_);

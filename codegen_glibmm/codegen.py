@@ -1349,7 +1349,7 @@ class CodeGenerator:
         for p in i.properties:
             self.emit_cpp_f(dedent('''
             bool {i.cpp_namespace_name}::{p.name}_setHandler({p.cpptype_in} value) {{
-                pp_{p.name}.set_value(value);
+                pp_{p.name} = value;
                 property_wakeUp();
                 return true;
             }}''').format(**locals()))
@@ -1438,6 +1438,8 @@ class CodeGenerator:
 
         class {i.cpp_class_name}MessageHelper {{
         public:
+            {i.cpp_class_name}MessageHelper () = default;
+            {i.cpp_class_name}MessageHelper (const {i.cpp_class_name}MessageHelper& ) = default;
             {i.cpp_class_name}MessageHelper (const Glib::RefPtr<Gio::DBus::MethodInvocation> msg) :
                 m_message(msg) {{}}
 
@@ -1504,7 +1506,7 @@ class CodeGenerator:
             self.generate_property_handlers_proxy(i)
             self.generate_signal_handler_proxy(i)
             self.generate_proxy_creation(i)
-       
+
         if self.if_promises:
             self.generate_promise_introspection()
             self.generate_promise_intro()
