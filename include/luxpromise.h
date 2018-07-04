@@ -57,7 +57,9 @@ namespace lux {
     }
 
     inline void raw_wait_down(unique_l &lk) {
-      cv_.wait(lk, [&] { return !active_ || !fresh_; });
+      cv_.wait(lk, [&] { return !active_
+            || (LType == ptype::property)
+            || !fresh_; });
     }
 
   public:
