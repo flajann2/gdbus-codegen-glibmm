@@ -24,7 +24,33 @@ namespace lux {
 using namespace lux;
 using namespace std;
 
+template<typename PIT>
+void test_propertish(PIT& pit, int countdown) {
+  std::thread t1([&]() {
+    for (auto i = countdown; i > 0; --i) {
+      std::this_thread::sleep_for(std::chrono::microseconds(1));
+      data = i;
+    }
+    data.end_updates();
+  });
+
+  int data_snapshot;
+  int last_data_snapshot = data() + 1;
+
+  while ((data_snapshot = data()) > 1) {
+    if (data.is_active()) {
+      ASSERT_TRUE(data_snapshot <= last_data_snapshot);
+    }
+    last_data_snapshot = data_snapshot;
+    data.wait_for_update();
+  }
+
+  t1.join();
+}
+
+
 TEST_F(PromiseTests, test_property_mode) {
+  test_propertish(property, );
   std::thread t1([&]() {
     for (auto i = countdown; i > 0; --i) {
       std::this_thread::sleep_for(std::chrono::microseconds(1));
