@@ -1,0 +1,6 @@
+* lux::promise
+** state transistion table
+   |                    |   | initial | write | read |
+   | properties         |   |         |       |      |
+   | notifications      |   |         |       |      |
+   | methods and events |   |         |       |      |

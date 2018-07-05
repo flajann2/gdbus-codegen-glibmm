@@ -1,6 +1,7 @@
 #include <condition_variable>
 #include <mutex>
 #include <thread>
+#include <iostream> // TODO: for debugging. remove this line.
 
 /**
  */
@@ -23,6 +24,7 @@ namespace lux {
   using unique_l = std::unique_lock<mutex_l>;
   using condvar = std::condition_variable;
   using notify_ob = bool;
+  using namespace std; // TODO: for debugging. Remove
 
   /**
    */
@@ -40,13 +42,13 @@ namespace lux {
     }
 
     void wake_up(unique_l &lk) {
-      
       fresh_ = true;
       lk.unlock();
       cv_.notify_all();
     }
 
     inline void raw_wait_up(unique_l &lk, bool wait_for = true) {
+      cout << "raw_wait_up("  << (int) LType << "): active = " << active_ << " fresh " << fresh_ << " wait_for " << wait_for_ << endl;
       switch (LType) {
       case ptype::method:
       case ptype::event:
@@ -57,6 +59,7 @@ namespace lux {
     }
 
     inline void raw_wait_down(unique_l &lk) {
+      cout << "raw_wait_dn(" << LType << "): active = " << active_ << " fresh " << fresh_ << " wait_for " << wait_for_ << endl;
       cv_.wait(lk, [&] { return !active_
             || (LType == ptype::property) || (LType == ptype::notification)
             || !fresh_; });
