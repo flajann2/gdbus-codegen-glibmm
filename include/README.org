@@ -1,6 +1,7 @@
 * lux::promise
 ** state transistion table
-   |                    |   | initial | write | read |
-   | properties         |   |         |       |      |
-   | notifications      |   |         |       |      |
-   | methods and events |   |         |       |      |
+   |                    |   | initial | write                   | read                      |
+   | properties         |   | stale   | no_wait go_fresh        | wait_for_fresh stay_fresh |
+   | notifications      |   | stale   | no_wait go_fresh        | wait_for_fresh go_stale   |
+   | methods and events |   | stale   | wait_for_stale go_fresh | wait_for_fresh go_stale   |
+   |                    |   |         |                         |                           |
