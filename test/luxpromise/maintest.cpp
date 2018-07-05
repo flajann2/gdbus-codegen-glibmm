@@ -34,15 +34,15 @@ void test_propertish(PIT& pit, int countdown) {
     pit.end_updates();
   });
 
-  int data_snapshot;
-  int last_data_snapshot = data() + 1;
+  int snapshot;
+  int last_snapshot = pit() + 1;
 
   while ((snapshot = pit()) > 1) {
     if (pit.is_active()) {
-      ASSERT_TRUE(data_snapshot <= last_data_snapshot);
+      ASSERT_TRUE(snapshot <= last_snapshot);
     }
     last_snapshot = snapshot;
-    pit.wait_for_update();
+    pit.fresh_wait();
   }
 
   t1.join();
@@ -50,7 +50,7 @@ void test_propertish(PIT& pit, int countdown) {
 
 
 TEST_F(PromiseTests, test_property_mode) {
-  test_propertish(property, );
+  test_propertish(data, countdown);
   std::thread t1([&]() {
     for (auto i = countdown; i > 0; --i) {
       std::this_thread::sleep_for(std::chrono::microseconds(1));
@@ -67,7 +67,7 @@ TEST_F(PromiseTests, test_property_mode) {
       ASSERT_TRUE(data_snapshot <= last_data_snapshot);
     }
     last_data_snapshot = data_snapshot;
-    data.wait_for_update();
+    data.fresh_wait();
   }
 
   t1.join();

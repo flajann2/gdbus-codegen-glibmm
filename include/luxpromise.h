@@ -3,7 +3,8 @@
 #include <thread>
 #include <iostream> // TODO: for debugging. remove this line.
 
-/**
+/** Please see the README.org for the details of the
+ * locking / waiting semantics.
  */
 
 namespace lux {
@@ -35,20 +36,20 @@ namespace lux {
     bool fresh_ = false;
     bool active_ = true;
 
-    void wake_down(unique_l &lk) {
+    void stale_wake_up(unique_l &lk) {
       fresh_ = false;
       lk.unlock();
       cv_.notify_all();
     }
 
-    void wake_up(unique_l &lk) {
+    void fresh_wake_up(unique_l &lk) {
       fresh_ = true;
       lk.unlock();
       cv_.notify_all();
     }
 
-    inline void raw_wait_up(unique_l &lk, bool wait_for = true) {
-      cout << "raw_wait_up("  << (int) LType << "): active = " << active_ << " fresh " << fresh_ << " wait_for " << wait_for_ << endl;
+    inline void wait_for_fresh(unique_l &lk, bool wait_for = true) {
+      //cout << "wait_for_fresh("  << (int) LType << "): active = " << active_ << " fresh " << fresh_ << " wait_for " << wait_for << endl;
       switch (LType) {
       case ptype::method:
       case ptype::event:
@@ -58,8 +59,8 @@ namespace lux {
       cv_.wait(lk, [&] { return !active_ || (fresh_ || !wait_for); });
     }
 
-    inline void raw_wait_down(unique_l &lk) {
-      cout << "raw_wait_dn(" << LType << "): active = " << active_ << " fresh " << fresh_ << " wait_for " << wait_for_ << endl;
+    inline void wait_for_stale(unique_l &lk) {
+      //cout << "wait_for_stale(" << (int) LType << "): active = " << active_ << " fresh " << fresh_ << endl;
       cv_.wait(lk, [&] { return !active_
             || (LType == ptype::property) || (LType == ptype::notification)
             || !fresh_; });
@@ -72,17 +73,17 @@ namespace lux {
 
     promise &operator=(Data &&update_data) {
       unique_l lk(mutex_);
-      raw_wait_down(lk);
+      wait_for_stale(lk);
       data_ = std::move(update_data);
-      wake_up(lk);
+      fresh_wake_up(lk);
       return *this;
     }
 
     promise &operator=(Data &update_data) {
       unique_l lk(mutex_);
-      raw_wait_down(lk);
+      wait_for_stale(lk);
       data_ = update_data;
-      wake_up(lk);
+      fresh_wake_up(lk);
       return *this;
     }
 
@@ -91,9 +92,9 @@ namespace lux {
     /// it is entirely possible the copy will be elided.
     const Data operator()(bool wait_for = true) {
       unique_l lk(mutex_);
-      raw_wait_up(lk, wait_for);
+      wait_for_fresh(lk, wait_for);
       auto snapshot_data = data_;
-      wake_down(lk);
+    stale_wake_up(lk);
       return snapshot_data;
     }
 
@@ -101,16 +102,16 @@ namespace lux {
     inline bool is_active() { return active_; }
 
     /// Will wait while staying fresh.
-    inline promise<Data, LType> &wait_for_update() {
+    inline promise<Data, LType> &fresh_wait() {
       unique_l lk(mutex_);
-      raw_wait_up(lk);
+      wait_for_fresh(lk);
       return *this;
     }
 
     /// Will wait while not staying fresh.
-    inline promise<Data, LType> &wait_for_downdate() {
+    inline promise<Data, LType> &stale_wait() {
       unique_l lk(mutex_);
-      raw_wait_down(lk);
+      wait_for_stale(lk);
       return *this;
     }
   };
