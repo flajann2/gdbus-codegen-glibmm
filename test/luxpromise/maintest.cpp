@@ -25,7 +25,7 @@ using namespace lux;
 using namespace std;
 
 template<typename PIT>
-void test_propertish(PIT& pit, int countdown) {
+void test_property_like(PIT& pit, int countdown) {
   std::thread t1([&]() {
     for (auto i = countdown; i > 0; --i) {
       std::this_thread::sleep_for(std::chrono::microseconds(1));
@@ -49,33 +49,8 @@ void test_propertish(PIT& pit, int countdown) {
 }
 
 
-TEST_F(PromiseTests, test_property_mode) {
-  test_propertish(data, countdown);
-  std::thread t1([&]() {
-    for (auto i = countdown; i > 0; --i) {
-      std::this_thread::sleep_for(std::chrono::microseconds(1));
-      data = i;
-    }
-    data.end_updates();
-  });
-
-  int data_snapshot;
-  int last_data_snapshot = data() + 1;
-
-  while ((data_snapshot = data()) > 1) {
-    if (data.is_active()) {
-      ASSERT_TRUE(data_snapshot <= last_data_snapshot);
-    }
-    last_data_snapshot = data_snapshot;
-    data.fresh_wait();
-  }
-
-  t1.join();
-}
-
-
 template<typename PIT>
-void test_non_property(PIT& pit, int meltdown) {
+void test_method_like(PIT& pit, int meltdown) {
   std::thread t1([&]() {
       for (auto i = meltdown; i > 0; --i) {
       pit = i;
@@ -96,14 +71,18 @@ void test_non_property(PIT& pit, int meltdown) {
   t1.join();
 }
 
+TEST_F(PromiseTests, test_property_mode) {
+  test_property_like(data, countdown);
+}
+
 TEST_F(PromiseTests, test_method_mode) {
-  test_non_property(method, meltdown);
+  test_method_like(method, meltdown);
 }
 
 TEST_F(PromiseTests, test_event_mode) {
-  test_non_property(event, meltdown);
+  test_method_like(event, meltdown);
 }
 
 TEST_F(PromiseTests, test_notification_mode) {
-  test_non_property(notif, meltdown);
+  test_property_like(notif, meltdown);
 }
