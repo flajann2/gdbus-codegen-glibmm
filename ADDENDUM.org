@@ -1,6 +1,22 @@
 * Addendum to the README
 ** Promises and Futures
-*** Approach
+*** USAGE
+    --promise example:
+    #+begin_src bash
+    dbus-codegen-glibmm --promise --generate-cpp-code=${HOME}/temperature-service-example/build/generated/temperature-service
+              ${HOME}/temperature-service-example/temperature-service.xml
+    #+end_src
+    This will create the following files in `${HOME}/temperature-service-example/build/generated/`:
+    #+begin_src files
+    temperature-service_common.cpp
+    temperature-service_common.h
+    temperature-service_proxy.cpp
+    temperature-service_proxy.h
+    temperature-service_promise.cpp
+    temperature-service_promise.h
+    #+end_src
+
+*** The Gory Details -- Approach
     We wrap stubs with promises, and in particular the methods
     and properties. For each group (methods, properties), we
     nominate a signaling object to signify that a method call was made
