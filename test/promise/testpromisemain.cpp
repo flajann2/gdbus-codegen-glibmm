@@ -7,8 +7,21 @@
 using namespace org::gdbus::codegen::glibmm;
 using namespace std;
 
+void FutureTest::TestTriggerInternalPropertyChange(
+    gint32 newValue, TestMessageHelper invocation) {
+  TestPropInternalReadPropertyChange_set(newValue);
+  TestPropInternalReadWritePropertyChange_set(newValue);
+  invocation.ret();
+}
+
 //*
-void setupProperties(Test &ft) {
+void setupProperties(FutureTest &ft) {
+  // on this member, due to the semantics of futures
+  // vs. the normal matter, this property must be
+  // set first, or it will block on first get().
+  ft.TestPropInternalReadPropertyChange_set(0);
+  ft.TestPropInternalReadWritePropertyChange_set(0);
+  
   auto v1 = vector<string>{"Value1", "Value2"};
   ft.TestPropReadByteStringArray_set(v1);
   ft.TestPropReadObjectPathArray_set(vector<string>{"Value3", "Value4"});
@@ -71,12 +84,12 @@ int main() {
   Glib::init();
   Gio::init();
 
-  Test ft;
+  FutureTest ft;
 
   ft.connect(Gio::DBus::BUS_TYPE_SESSION, "org.gdbus.codegen.glibmm.Test");
-  
+
   Glib::RefPtr<Glib::MainLoop> ml = Glib::MainLoop::create();
   setupProperties(ft);
-  
+
   ml->run();
 }
