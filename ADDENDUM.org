@@ -1,0 +1,56 @@
+* Addendum to the README
+** Promises and Futures
+*** USAGE
+    --promise example:
+    #+begin_src bash
+    dbus-codegen-glibmm --promise --generate-cpp-code=${HOME}/temperature-service-example/build/generated/temperature-service
+              ${HOME}/temperature-service-example/temperature-service.xml
+    #+end_src
+    This will create the following files in `${HOME}/temperature-service-example/build/generated/`:
+    #+begin_src files
+    temperature-service_common.cpp
+    temperature-service_common.h
+    temperature-service_proxy.cpp
+    temperature-service_proxy.h
+    temperature-service_promise.cpp
+    temperature-service_promise.h
+    #+end_src
+
+*** The Gory Details -- Approach
+    We wrap stubs with promises, and in particular the methods
+    and properties. For each group (methods, properties), we
+    nominate a signaling object to signify that a method call was made
+    across DBus or that a property was set. The signaling object is itself
+    a promise, so you can block on its future, and then look for the specific
+    method or property that was activated, in a synchronous manner.
+
+    We generate both the promise and future objects, so all you need to do is
+    access the futures via the access methods generated.
+
+**** Property_Set
+     Whenever a property is set, it can be set by an external agent (through dBus) or
+     locally by the application. Regardless, an emitSignal() event is transacted.
+
+     The pp_wakeUp promise will be triggered regardless. However, we may need to 
+     convey through that whether the property was set locally or externally, so that
+     the application does not wind up processing its own signals, leading to a possible
+     infinite loop.
+
+     Indeed, if it were set locally, one can argue the pp_wakeUp should not be set
+     at all.
+
+     Also note that properties are also being gotten as well as set. And so the
+     getters will hit the futures! Ah, symmetry. In the case of the getters, does there need to be
+     a seperate trigger? I would think not -- however, we may need to expose this 
+     trigger across dbus.
+
+     For now, we will NOT expose the wakeup across dBus. We may later, should the need requires 
+     it.
+
+***** Signatures
+      pm_  -- promise for method
+      fm_  -- future  for method
+      pp_  -- promise for property
+      fp_  -- future  for property
+
+     

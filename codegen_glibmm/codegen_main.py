@@ -61,8 +61,9 @@ def codegen_main():
                             help='The namespace to use for generated C++ code')
     arg_parser.add_option('', '--generate-cpp-code', metavar='OUTFILES',
                           help='Generate C++ code in OUTFILES.[cpp|h]')
+    arg_parser.add_option('', '--promise', metavar='PROMISE',
+                          help='Generate C++ code in OUTFILES.[cpp|h]')
     (opts, args) = arg_parser.parse_args()
-
 
     all_ifaces = []
     node_xmls = []
@@ -85,13 +86,24 @@ def codegen_main():
         i.post_process(interface_prefix_list, opts.cpp_namespace)
 
     cpp_code = opts.generate_cpp_code
+    if_promises = opts.promise
 
     if cpp_code:
-        proxy_h = open(cpp_code + "_proxy" + '.h', 'w')
-        proxy_cpp = open(cpp_code + "_proxy" + '.cpp', 'w')
-        stub_h = open(cpp_code + "_stub" + '.h', 'w')
-        stub_cpp = open(cpp_code + "_stub" + '.cpp', 'w')
-        common_h = open(cpp_code + "_common" + '.h', 'w')
+        proxy_h    = open(cpp_code + "_proxy" + '.h', 'w')
+        proxy_cpp  = open(cpp_code + "_proxy" + '.cpp', 'w')
+        metadata_h = open(cpp_code + "_metadata" + '.h', 'w')
+        if if_promises:
+            stub_h   = None
+            stub_cpp = None
+            promise_h   = open(cpp_code + "_promise" + '.h', 'w')
+            promise_cpp = open(cpp_code + "_promise" + '.cpp', 'w')
+        else: # stubs
+            stub_h   = open(cpp_code + "_stub" + '.h', 'w')
+            stub_cpp = open(cpp_code + "_stub" + '.cpp', 'w')
+            promise_h   = None
+            promise_cpp = None
+            
+        common_h   = open(cpp_code + "_common" + '.h', 'w')
         common_cpp = open(cpp_code + "_common" + '.cpp', 'w')
         gen = codegen.CodeGenerator(all_ifaces,
                                     opts.cpp_namespace,
@@ -99,12 +111,16 @@ def codegen_main():
                                     node_xmls,
                                     proxy_h, proxy_cpp,
                                     stub_cpp, stub_h,
-                                    common_cpp, common_h);
+                                    if_promises, promise_cpp, promise_h,
+                                    common_cpp, common_h,
+                                    metadata_h)
         ret = gen.generate()
         proxy_h.close()
         proxy_cpp.close()
-        stub_h.close()
-        stub_cpp.close()
+        if stub_h:   stub_h.close()
+        if stub_cpp: stub_cpp.close()
+        if promise_h:   promise_h.close()
+        if promise_cpp: promise_cpp.close()
 
     sys.exit(0)
 
